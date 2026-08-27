@@ -533,3 +533,33 @@ items, as expected for test mode. The live calls prove credentials and response 
 status. A settlement ID alone is not enough: a paired-but-unexplained record cannot inflate
 the headline. `pair_rate` is the percentage with a settlement ID. `in_transit` is outside
 both rates because it is an expected pending state, not a successful match or exception.
+
+### OpenRouter Ling Flash is the current model route
+`config.py` uses OpenRouter's OpenAI-compatible endpoint with
+`inclusionai/ling-3.0-flash-fin:free`, `temperature=0`, and reasoning enabled. The
+credential remains an environment variable named `OPENROUTER_API_KEY`; supplied keys are
+never written to repository files.
+
+### NVIDIA tool-calling diagnosis and manual schema validation
+The initial NVIDIA DeepSeek Flash route returned a function-registration 404. A direct
+NVIDIA request with `deepseek-ai/deepseek-v4-pro-0813` then succeeded, and a minimal Agno
+probe with one tool also succeeded. LangGraph was tested against the same model and endpoint
+and also called its tool, proving the issue was not the model, the NVIDIA endpoint, or basic
+Agno tool calling.
+
+The full reconciliation agent still produced zero tool calls when `output_schema=Diagnosis`
+was configured. A tiny Agno agent with one tool reproduced that failure with the schema, while
+the four real reconciliation tools worked with a compact prompt when the schema was absent.
+The root cause was the interaction between Agno's provider-facing structured-output path and
+tool calling on this NVIDIA model, not the long taxonomy prompt or the tools themselves.
+
+The fix is to omit `output_schema` from the Agent, instruct the model to return one JSON
+diagnosis after it finishes using tools, and parse that response locally with
+`Diagnosis.model_validate`. Raw JSON and fenced JSON are accepted; any parse or validation
+failure retains the existing unresolved fallback record.
+
+The first five-record run after the fix produced real traces for all five records: pairing
+accuracy 100%, diagnosis accuracy 100%, and zero records without tool calls. It averaged 2.8
+calls per record. The model repeated arithmetic evidence on two records and fuzzy evidence on
+one record, but made no unbounded loop. Results are saved in
+`evaluation/deepseek_pro_manual_schema_results_5.json`.

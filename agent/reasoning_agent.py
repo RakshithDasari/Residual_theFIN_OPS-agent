@@ -1,4 +1,6 @@
 import asyncio
+import json
+import re
 from textwrap import dedent
 
 from agno.agent import Agent
@@ -76,10 +78,12 @@ reconciliation_agent = Agent(
         "sentences, give the amount in rupees, and say what they should do about it, including "
         "that they need do nothing when nothing is wrong.",
 
+        "After using the tools, return exactly one JSON object with the fields primary_cause, "
+        "contributing_causes, explanation, and confidence. Do not wrap it in markdown.",
+
         "Prefer unresolved to a cause that nearly fits. A confident wrong explanation costs the "
         "merchant more than an honest gap does.",
     ],
-    output_schema=Diagnosis,
     tool_call_limit=MAX_TOOL_CALLS,
     telemetry=False,
 )
@@ -110,9 +114,30 @@ def build_trace(run) -> list[TraceStep]:
     return steps
 
 
+def parse_diagnosis(content) -> Diagnosis | None:
+    """Parse and validate the model's final diagnosis without provider schema enforcement."""
+    if isinstance(content, Diagnosis):
+        return content
+    if not isinstance(content, str):
+        return None
+
+    candidates = [content.strip()]
+    candidates.extend(re.findall(r"```(?:json)?\s*(\{.*?\})\s*```", content, re.DOTALL))
+    start = content.find("{")
+    end = content.rfind("}")
+    if start >= 0 and end > start:
+        candidates.append(content[start : end + 1])
+
+    for candidate in candidates:
+        try:
+            return Diagnosis.model_validate(json.loads(candidate))
+        except (json.JSONDecodeError, TypeError, ValueError):
+            continue
+    return None
+
+
 def _unreadable(expected, trace) -> ReconciledRecord:
-    """Anthropic has no native structured output in Agno 2.9.0, so output_schema is enforced
-    through the prompt and parsed on the way back. This is what a failed parse becomes."""
+    """Return an unresolved record when the model's final diagnosis cannot be validated."""
     return ReconciledRecord(
         record_id=expected.record_id,
         business_type=expected.business_type,
@@ -129,7 +154,8 @@ async def reconcile_record(expected, settlements, as_of) -> ReconciledRecord:
     run = await reconciliation_agent.arun(build_prompt(expected))
     trace = build_trace(run)
 
-    if not isinstance(run.content, Diagnosis):
+    diagnosis = parse_diagnosis(run.content)
+    if diagnosis is None:
         return _unreadable(expected, trace)
 
     settlement = record.matched
@@ -139,10 +165,10 @@ async def reconcile_record(expected, settlements, as_of) -> ReconciledRecord:
         expected_amount_paise=expected.expected_amount_paise,
         actual_amount_paise=settlement.amount_paise if settlement else None,
         settlement_id=settlement.settlement_id if settlement else None,
-        primary_cause=run.content.primary_cause,
-        contributing_causes=run.content.contributing_causes,
-        explanation=run.content.explanation,
-        confidence=run.content.confidence,
+        primary_cause=diagnosis.primary_cause,
+        contributing_causes=diagnosis.contributing_causes,
+        explanation=diagnosis.explanation,
+        confidence=diagnosis.confidence,
         trace=trace,
     )
 
@@ -205,6 +231,11 @@ if __name__ == "__main__":
         ' "explanation": "Rs 83.60 was withheld as TDS.", "confidence": 0.95}'
     )
     assert diagnosis.primary_cause is DiscrepancyCause.TDS
+
+    assert parse_diagnosis(diagnosis.model_dump_json()).primary_cause is DiscrepancyCause.TDS
+    fenced = "```json\n" + diagnosis.model_dump_json() + "\n```"
+    assert parse_diagnosis(fenced).primary_cause is DiscrepancyCause.TDS
+    assert parse_diagnosis("not a diagnosis") is None
 
     unreadable = _unreadable(expected_records[0], [])
     assert unreadable.status is RecordStatus.UNRESOLVED and unreadable.confidence == 0.0

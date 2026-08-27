@@ -12,7 +12,7 @@ DATA_DIR = BASE_DIR / "data"
 BATCH_FILE = DATA_DIR / "synthetic_batch.json"
 GROUND_TRUTH_FILE = DATA_DIR / "ground_truth.json"
 
-MODEL_ID = "deepseek-ai/deepseek-v4-flash-0731"
+MODEL_ID = "deepseek-ai/deepseek-v4-pro-0813"
 
 model = OpenAIChat(
     id=MODEL_ID,
@@ -21,6 +21,7 @@ model = OpenAIChat(
     temperature=0,
     top_p=0.95,
     max_tokens=16384,
-    extra_body={"chat_template_kwargs": {"thinking": True, "reasoning_effort": "high"}},
+    seed=42,
+    extra_body={"chat_template_kwargs": {"thinking": False}},
     supports_native_structured_outputs=False,
 )
