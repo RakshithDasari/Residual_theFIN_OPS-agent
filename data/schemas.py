@@ -186,4 +186,4 @@ if __name__ == "__main__":
     assert status_for(DiscrepancyCause.IN_TRANSIT) is RecordStatus.IN_TRANSIT
     assert status_for(DiscrepancyCause.UNRESOLVED) is RecordStatus.UNRESOLVED
 
-    print("schemas ok")
+    print("[schemas] ok")

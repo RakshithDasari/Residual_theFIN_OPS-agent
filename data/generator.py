@@ -12,8 +12,8 @@ import json
 import random
 import string
 from datetime import datetime, timedelta
-from pathlib import Path
 
+from config import BATCH_FILE, DATA_DIR
 from data.schemas import (
     BusinessType,
     DiscrepancyCause,
@@ -178,7 +178,7 @@ def generate(seed=42):
 
 
 def write(directory=None):
-    directory = directory or Path(__file__).parent
+    directory = directory or DATA_DIR
     expected_records, settlements, ground_truth = generate()
 
     (directory / "synthetic_batch.json").write_text(
@@ -198,7 +198,7 @@ def write(directory=None):
 
 if __name__ == "__main__":
     expected_records, settlements, ground_truth = write()
-    batch = json.loads((Path(__file__).parent / "synthetic_batch.json").read_text())
+    batch = json.loads(BATCH_FILE.read_text())
 
     assert "linked_settlement_id" not in json.dumps(batch), "answer key leaked into the batch"
     assert len(expected_records) == sum(CAUSE_MIX.values()) == 55
@@ -233,4 +233,4 @@ if __name__ == "__main__":
     assert generate()[2] == ground_truth, "same seed must produce the same batch"
 
     unexplained = sum(1 for t in ground_truth if t.primary_cause is not DiscrepancyCause.MDR_FEE)
-    print(f"batch ok - 55 records, {unexplained} needing more than standard deductions")
+    print(f"[generator] ok - 55 records, {unexplained} needing more than standard deductions")

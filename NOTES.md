@@ -248,30 +248,32 @@ hard, since both are "positive residual, no statutory match." That is the judgem
 human controller actually makes, so it is the right thing to be scored on.
 
 ### Tools take no arguments; the record is bound in
-`RecordTools(expected, settlements, as_of)` closes over the data, so the agent calls
-`try_exact_match()` empty. Letting the model pass a UTR or an amount would be a
+The record, the settlement list and the batch date live in a `ContextVar`, so the agent
+calls `try_exact_match()` empty. Letting the model pass a UTR or an amount would be a
 hallucination surface — one transposed digit pairs a record to the wrong settlement while
 every downstream step still looks healthy. Binding the data in makes that impossible
 rather than validated against, which also removes a whole "ID not found" error path.
 
-Also what makes fan-out safe: one `RecordTools` per record, nothing shared.
+`get_current_record()` raises when nothing is bound instead of returning `None`. A tool
+running unbound would not crash, it would answer confidently about the wrong record, which
+is the worst failure this project has.
 
-### A class, not closures, so eval can read the pairing
-`check_arithmetic_causes` needs to know which settlement was paired, so state lives
-between tool calls. A class keeps it explicit and leaves `tools.matched` readable after
-the run — which is how `settlement_id` reaches `ReconciledRecord` and how eval scores
-pairing accuracy separately from diagnosis accuracy.
+### The bound record is a ContextVar, not a per-record object
+`check_arithmetic_causes` needs to know which settlement was paired, so state has to live
+between tool calls. It lives on the `RecordContext` the ContextVar holds, and
+`set_current_record` returns that object so the caller can read `.matched` back after the
+run — which is how `settlement_id` reaches `ReconciledRecord` and how eval scores pairing
+accuracy separately from diagnosis accuracy.
 
-Verified first that Agno's `Function.from_callable` handles bound methods: `self` is
-dropped, the docstring becomes the model-facing description, and a no-arg method yields an
-empty schema. A self-check asserts all four still introspect, since a tool that loses its
-docstring is silently degraded rather than broken.
+This is what lets the tools be plain module-level functions and the agent be a single
+module-level object. An earlier version bound the data into a `RecordTools` instance and
+built one agent per record; the ContextVar does the same job with no class and no factory.
 
-### Tool docstrings are prompt text, engine docstrings are not
-Same functions, two audiences, which is the whole reason `agent/tools.py` exists rather
-than handing Agno the matcher directly. `matcher.try_fuzzy_match` explains to a maintainer
-why structural tests beat similarity scores, with the measurements — 300 tokens the model
-has no use for. The tool version says when to reach for it.
+Safe under fan-out because `asyncio.gather` wraps each coroutine in a `Task`, and a Task
+copies the current `Context` at creation — a `set()` inside one run is invisible to the
+other 54. `python -m context` asserts exactly that across all 55 records, and asserts
+nothing leaks back into the caller's context afterwards.
+
 
 ### Tools report state and never name a cause
 Enforced, not just intended: `assert DiscrepancyCause.MDR_FEE.value not in report`. If a
@@ -455,3 +457,38 @@ no panic-red "ERROR".
    the agent explains why, and this only adds a way to ask again.
 
 Non-requirements: no auth, no multi-user, no manual override, minimal animation.
+
+### Tool docstrings state capability; the agent's instructions carry the guidance
+Same functions, two audiences, which is the whole reason `agent/tools.py` exists rather
+than handing Agno the matcher directly. `matcher.try_fuzzy_match` explains to a maintainer
+why structural tests beat similarity scores, with the measurements — 300 tokens the model
+has no use for. The tool docstring says only what the tool does.
+
+When to reach for each tool sits in `instructions` instead, and is phrased as capability
+rather than order: "`check_arithmetic_causes()` only means anything once a settlement is
+paired", not "call it third". A prescriptive `first X, then Y` would turn the agent into a
+script and the differentiator into a fixed pipeline with an LLM writing the summary.
+
+### One agent object, not one per record
+`reconciliation_agent` is a module-level singleton. Agno 2.9.0 keeps per-run state in a
+`RunContext` rather than on the `Agent`, and the record itself is in a ContextVar, so
+nothing about a run is stored on the shared object. The guard is the pairing assert in
+`python -m agent.tools`: if runs contaminated each other, pairings would cross and it would
+fail loudly across all 55 records.
+
+### `AgentOS` for observability, no `db`, no `Team`
+`playground.py` runs Agno's `AgentOS` so tool calls can be watched live — useful for the
+pitch video, since "the agent chose this path" is the claim being made. Deliberately no
+`db=`: a batch recon has nothing to persist between sessions, and `SqliteDb` would drag in
+`sqlalchemy` for that. `AgentOS` does need `python-multipart`, which is now pinned.
+
+Also no `Team`. 55 records are independent, and splitting matching from diagnosis across
+two members would put the tool order back in the routing layer — exactly what the single
+agent is meant to own. Verified against agno 2.9.0: `agno.playground` no longer exists,
+only `agno.os.AgentOS`.
+
+### The Playground binds one record at import
+The tools read from context, so a chat with nothing bound would raise. `playground.py` sets
+`PLAYGROUND_RECORD` (index 0) at import, the way a per-user demo would set a default user.
+Every chat in the Playground reconciles that one record; change the index to watch another.
+Not a product surface — a window onto the agent's tool path.

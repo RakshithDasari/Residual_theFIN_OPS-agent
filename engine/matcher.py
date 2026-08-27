@@ -112,17 +112,16 @@ def days_awaiting_settlement(expected, as_of):
 
 if __name__ == "__main__":
     import json
-    from pathlib import Path
 
+    from config import BATCH_FILE, GROUND_TRUTH_FILE
     from data.schemas import DiscrepancyCause, GroundTruthEntry
 
-    data_dir = Path(__file__).resolve().parent.parent / "data"
-    batch = json.loads((data_dir / "synthetic_batch.json").read_text())
+    batch = json.loads(BATCH_FILE.read_text())
     expected_records = [ExpectedRecord(**r) for r in batch["expected_records"]]
     settlements = [SettlementRecord(**s) for s in batch["settlements"]]
     truth = {
         t["record_id"]: GroundTruthEntry(**t)
-        for t in json.loads((data_dir / "ground_truth.json").read_text())
+        for t in json.loads(GROUND_TRUTH_FILE.read_text())
     }
 
     exact_hits = fuzzy_hits = 0
@@ -168,4 +167,4 @@ if __name__ == "__main__":
             assert residual > 0, f"{expected.record_id} refund should reduce the settlement"
 
     assert exact_hits + fuzzy_hits == 48
-    print(f"matcher ok - {exact_hits} exact, {fuzzy_hits} fuzzy, all 48 pairings correct")
+    print(f"[matcher] ok - {exact_hits} exact, {fuzzy_hits} fuzzy, all 48 pairings correct")

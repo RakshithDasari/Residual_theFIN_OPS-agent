@@ -39,5 +39,21 @@ cp .env.example .env   # fill in your keys
 Every module self-checks. Run them from the project root:
 
 ```bash
-python -m data.schemas && python -m data.generator && python -m engine.matcher && python -m agent.taxonomy && python -m agent.tools && python -m agent.reasoning_agent
+python -m data.schemas && python -m data.generator && python -m engine.matcher && python -m agent.taxonomy && python -m context && python -m agent.tools && python -m agent.reasoning_agent
 ```
+
+All of those run offline — no API key, no LLM calls.
+
+## Watching the agent work
+
+`playground.py` serves the agent through Agno's `AgentOS`, which shows each tool call as
+it happens. Useful for seeing that the agent picks its own path rather than following a
+script.
+
+```bash
+python playground.py
+```
+
+It binds one record at startup (`PLAYGROUND_RECORD` in `playground.py`); change the index
+to reconcile a different one. Needs `ANTHROPIC_API_KEY`.
+
