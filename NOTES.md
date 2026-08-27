@@ -287,22 +287,6 @@ recovers in a turn. Not defensive code for an impossible case; the case exists *
 the model has the steering wheel. The prerequisite itself is real domain logic: you cannot
 reconcile an amount against a settlement you have not identified.
 
-### NVIDIA DeepSeek Flash is the requested model route
-`config.py` uses `OpenAIChat` against NVIDIA's OpenAI-compatible endpoint with the supplied
-`deepseek-ai/deepseek-v4-flash-0731` model, `temperature=1`, `top_p=0.95`, 16,384 output
-tokens, and NVIDIA's requested thinking settings. `openai==3.5.0` is pinned; the unused
-Anthropic SDK is removed.
-
-NVIDIA's endpoint does not promise OpenAI JSON-schema support, so
-`supports_native_structured_outputs=False` makes Agno use prompt-enforced `output_schema`.
-A malformed answer is still a real path, and `_unreadable()` returns the record as
-`unresolved`, confidence 0.0, with the trace intact. Consistent with cause #10: when we
-cannot tell, say so.
-
-The account authenticated and listed models, but DeepSeek Flash timed out and NVIDIA then
-returned HTTP 402 (budget pool quota exhausted). No agent accuracy numbers are claimed until
-that quota is available again.
-
 ### Both documented Razorpay API boundaries are live-verified
 With the test credentials in `.env`, a read-only call to `GET /v1/settlements/?count=1&skip=0`
 authenticated and returned zero settlements. A read-only call to
@@ -510,17 +494,6 @@ The tools read from context, so a chat with nothing bound would raise. `playgrou
 Every chat in the Playground reconciles that one record; change the index to watch another.
 Not a product surface - a window onto the agent's tool path.
 
-### NVIDIA DeepSeek Flash is the requested model route
-`config.py` uses `OpenAIChat` against NVIDIA's OpenAI-compatible endpoint with
-`deepseek-ai/deepseek-v4-flash-0731`, `temperature=1`, `top_p=0.95`, 16,384 output tokens,
-and the requested thinking settings. `openai==3.5.0` is pinned; the unused Anthropic SDK is
-removed. NVIDIA does not promise OpenAI JSON-schema support, so
-`supports_native_structured_outputs=False` keeps `output_schema` prompt-enforced.
-
-The account authenticated and listed models, but DeepSeek Flash timed out and NVIDIA then
-returned HTTP 402 (budget pool quota exhausted). No agent accuracy numbers are claimed until
-that quota is available again.
-
 ### Both documented Razorpay API boundaries are live-verified
 Read-only calls with the test credentials authenticated against
 `GET /v1/settlements/?count=1&skip=0` and
@@ -533,12 +506,6 @@ items, as expected for test mode. The live calls prove credentials and response 
 status. A settlement ID alone is not enough: a paired-but-unexplained record cannot inflate
 the headline. `pair_rate` is the percentage with a settlement ID. `in_transit` is outside
 both rates because it is an expected pending state, not a successful match or exception.
-
-### OpenRouter Ling Flash is the current model route
-`config.py` uses OpenRouter's OpenAI-compatible endpoint with
-`inclusionai/ling-3.0-flash-fin:free`, `temperature=0`, and reasoning enabled. The
-credential remains an environment variable named `OPENROUTER_API_KEY`; supplied keys are
-never written to repository files.
 
 ### NVIDIA tool-calling diagnosis and manual schema validation
 The initial NVIDIA DeepSeek Flash route returned a function-registration 404. A direct
@@ -563,3 +530,17 @@ accuracy 100%, diagnosis accuracy 100%, and zero records without tool calls. It 
 calls per record. The model repeated arithmetic evidence on two records and fuzzy evidence on
 one record, but made no unbounded loop. Results are saved in
 `evaluation/deepseek_pro_manual_schema_results_5.json`.
+
+### Current model route
+`config.py` uses `OpenAIChat` against NVIDIA's OpenAI-compatible endpoint with
+`deepseek-ai/deepseek-v4-pro-0813`, `temperature=0`, `top_p=0.95`, seed 42, and thinking
+disabled. The credential remains `NVIDIA_API_KEY` in `.env`; it is never committed.
+
+### Full-batch rate-limit boundary
+The first full 55-record run at the default concurrency of 8 produced empty fallback records.
+A sequential retry with `concurrency=1` was also rejected repeatedly with NVIDIA HTTP 429
+(`Too Many Requests`), as captured in the temporary evaluation log. Because sequential
+execution did not succeed, concurrency has not been proven as the sole cause and no
+speculative inter-request delay was added. `evaluation/deepseek_pro_full_results.json` and
+`evaluation/deepseek_pro_full_results_sequential.json` are failure artifacts, not accuracy
+numbers; the five-record result remains the only successful live accuracy measurement.

@@ -24,7 +24,7 @@ Accuracy figures are whatever the eval script computes, reported per cause, incl
 the causes the agent handles badly. See [NOTES.md](NOTES.md) for every locked decision
 and its reasoning.
 
-The agent uses Ling 3.0 Flash through OpenRouter's OpenAI-compatible API.
+The agent uses DeepSeek V4 Pro through NVIDIA's OpenAI-compatible API.
 
 ## Live API boundary
 
@@ -35,7 +35,7 @@ history is therefore not used to inflate the batch - the 55-record workload rema
 ## Status
 
 In development. Agent and tool layers are verified offline across all 55 records. Set
-`OPENROUTER_API_KEY` before a live agent run.
+`NVIDIA_API_KEY` before a live agent run.
 
 ## Setup
 
@@ -63,4 +63,4 @@ python playground.py
 ```
 
 It binds one record at startup (`PLAYGROUND_RECORD` in `playground.py`); change the index
-to reconcile a different one. Needs `OPENROUTER_API_KEY`.
+to reconcile a different one. Needs `NVIDIA_API_KEY`.

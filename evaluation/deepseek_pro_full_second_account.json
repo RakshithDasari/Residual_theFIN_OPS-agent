@@ -1,0 +1,938 @@
+{
+  "metrics": {
+    "records_evaluated": 55,
+    "pairing_accuracy": 0.273,
+    "diagnosis_accuracy": 0.127,
+    "per_cause": {
+      "mdr_fee": {
+        "support": 22,
+        "precision": 0.8,
+        "recall": 0.182
+      },
+      "gst_on_fee": {
+        "support": 3,
+        "precision": 1.0,
+        "recall": 0.333
+      },
+      "tds": {
+        "support": 4,
+        "precision": null,
+        "recall": 0.0
+      },
+      "partial_refund": {
+        "support": 5,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "fx_markup": {
+        "support": 4,
+        "precision": null,
+        "recall": 0.0
+      },
+      "in_transit": {
+        "support": 4,
+        "precision": null,
+        "recall": 0.0
+      },
+      "dispute_hold": {
+        "support": 3,
+        "precision": null,
+        "recall": 0.0
+      },
+      "rounding_drift": {
+        "support": 4,
+        "precision": null,
+        "recall": 0.0
+      },
+      "utr_mismatch": {
+        "support": 4,
+        "precision": 1.0,
+        "recall": 0.25
+      },
+      "unresolved": {
+        "support": 2,
+        "precision": 0.021,
+        "recall": 0.5
+      }
+    },
+    "tool_path": {
+      "average_calls_per_record": 0.4,
+      "calls_by_tool": {
+        "try_exact_match": 8,
+        "check_arithmetic_causes": 11,
+        "try_fuzzy_match": 3
+      },
+      "records_with_no_tool_calls": 47
+    }
+  },
+  "report": {
+    "summary": {
+      "total_records": 55,
+      "matched_records": 6,
+      "explained_records": 2,
+      "in_transit_records": 0,
+      "unresolved_records": 47,
+      "needs_attention": 47,
+      "match_rate": 14.5,
+      "pair_rate": 14.5,
+      "exception_categories": {
+        "unresolved": 47,
+        "gst_on_fee": 1,
+        "partial_refund": 1
+      }
+    },
+    "records": [
+      {
+        "record_id": "ORD-1000",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 354100,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1001",
+        "business_type": "bookings",
+        "expected_amount_paise": 2618168,
+        "actual_amount_paise": 2608550,
+        "settlement_id": "setl_84AZYTJXEPQ85J",
+        "primary_cause": "gst_on_fee",
+        "contributing_causes": [
+          "mdr_fee"
+        ],
+        "explanation": "The merchant's expected figure of \u20b926,181.68 was already net of the \u20b9534.32 processing fee, so Razorpay's settlement of \u20b926,085.50 subtracted that fee a second time. The remaining gap is the 18% GST on the processing fee (\u20b996.18), which the merchant had not accounted for. No action is needed on the fee itself, but the finance team should note that the GST on the processing fee is a genuine, non-recoverable cost that should be booked going forward.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_84AZYTJXEPQ85J. Its UTR is exactly the reference on this record (UTR2026081042953)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_84AZYTJXEPQ85J. expected_amount_paise: 2618168 actual_amount_paise: 2608550 fees_paise: 53432 tax_paise: 9618 predicted_net_paise: 2555118 residual_paise: -53432 residual_pct_of_expected: -2.0408 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 53432 tds_at_1pct_paise: 26182 fx_markup_at_3pct_paise: 78545 residual_in_rupees: -534.32"
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_84AZYTJXEPQ85J. expected_amount_paise: 2618168 actual_amount_paise: 2608550 fees_paise: 53432 tax_paise: 9618 predicted_net_paise: 2555118 residual_paise: -53432 residual_pct_of_expected: -2.0408 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 53432 tds_at_1pct_paise: 26182 fx_markup_at_3pct_paise: 78545 residual_in_rupees: -534.32"
+          }
+        ],
+        "status": "explained"
+      },
+      {
+        "record_id": "ORD-1002",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 440000,
+        "actual_amount_paise": 427747,
+        "settlement_id": "setl_KXVF1T2TALA753",
+        "primary_cause": "mdr_fee",
+        "contributing_causes": [
+          "gst_on_fee"
+        ],
+        "explanation": "The settlement reconciles exactly. Your order was booked at \u20b94,400.00 gross, and Razorpay settled \u20b94,277.47 after deducting a processing fee of \u20b9103.84 and the 18% GST on that fee of \u20b918.69. Nothing is missing \u2014 the difference is entirely the standard processing fee and its tax, so no action is needed.",
+        "confidence": 0.98,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "not found",
+            "detail": "No settlement has a UTR equal to this reference (UTR2026072991)."
+          },
+          {
+            "step": "try_fuzzy_match",
+            "result": "found",
+            "detail": "Matched settlement setl_KXVF1T2TALA753: reference is the first 13 characters of UTR UTR2026072991959."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_KXVF1T2TALA753. expected_amount_paise: 440000 actual_amount_paise: 427747 fees_paise: 10384 tax_paise: 1869 predicted_net_paise: 427747 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 10384 tds_at_1pct_paise: 4400 fx_markup_at_3pct_paise: 13200 residual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
+      },
+      {
+        "record_id": "INV-1003",
+        "business_type": "saas",
+        "expected_amount_paise": 289700,
+        "actual_amount_paise": 283717,
+        "settlement_id": "setl_39TEX8FSV871YZ",
+        "primary_cause": "mdr_fee",
+        "contributing_causes": [
+          "gst_on_fee"
+        ],
+        "explanation": "The settlement reconciles exactly. The merchant booked the gross order value of \u20b92,897.00, while Razorpay settled \u20b92,837.17 after deducting a processing fee of \u20b950.70 and the 18% GST on that fee of \u20b99.13. The residual is zero, so nothing is missing \u2014 the difference is entirely the standard processing fee and its GST. No action is needed.",
+        "confidence": 0.9,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_39TEX8FSV871YZ. Its UTR is exactly the reference on this record (UTR2026081573699)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_39TEX8FSV871YZ. expected_amount_paise: 289700 actual_amount_paise: 283717 fees_paise: 5070 tax_paise: 913 predicted_net_paise: 283717 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 5070 tds_at_1pct_paise: 2897 fx_markup_at_3pct_paise: 8691 residual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
+      },
+      {
+        "record_id": "INV-1004",
+        "business_type": "saas",
+        "expected_amount_paise": 1407300,
+        "actual_amount_paise": 1374088,
+        "settlement_id": "setl_QICATVAZCCBLSK",
+        "primary_cause": "mdr_fee",
+        "contributing_causes": [
+          "gst_on_fee"
+        ],
+        "explanation": "The settlement reconciles exactly. Your system booked the gross order value of \u20b914,073.00, while Razorpay settled \u20b913,740.88 after deducting a processing fee of \u20b9281.46 and the 18% GST on that fee of \u20b950.66. The residual is zero, so nothing is missing \u2014 the difference is entirely the standard processing fee and its GST. No action is needed.",
+        "confidence": 0.99,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_QICATVAZCCBLSK. Its UTR is exactly the reference on this record (UTR2026080177839)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_QICATVAZCCBLSK. expected_amount_paise: 1407300 actual_amount_paise: 1374088 fees_paise: 28146 tax_paise: 5066 predicted_net_paise: 1374088 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 28146 tds_at_1pct_paise: 14073 fx_markup_at_3pct_paise: 42219 residual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
+      },
+      {
+        "record_id": "ORD-1005",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 427600,
+        "actual_amount_paise": 418770,
+        "settlement_id": "setl_R23GDPPQ0Y9DOM",
+        "primary_cause": "mdr_fee",
+        "contributing_causes": [
+          "gst_on_fee"
+        ],
+        "explanation": "The settlement reconciles exactly. The merchant booked the gross order value of \u20b94,276.00, while Razorpay settled \u20b94,187.70 after deducting a processing fee of \u20b974.83 and GST on that fee of \u20b913.47. The residual is zero, so nothing is missing \u2014 the difference is entirely the standard processing fee and its GST. No action is needed.",
+        "confidence": 0.98,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_R23GDPPQ0Y9DOM. Its UTR is exactly the reference on this record (UTR2026081685525)."
+          },
+          {
+            "step": "try_fuzzy_match",
+            "result": "found",
+            "detail": "Matched settlement setl_R23GDPPQ0Y9DOM: reference differs from UTR UTR2026081685525 by 0 character(s)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_R23GDPPQ0Y9DOM. expected_amount_paise: 427600 actual_amount_paise: 418770 fees_paise: 7483 tax_paise: 1347 predicted_net_paise: 418770 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 7483 tds_at_1pct_paise: 4276 fx_markup_at_3pct_paise: 12828 residual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
+      },
+      {
+        "record_id": "BKG-1006",
+        "business_type": "bookings",
+        "expected_amount_paise": 866100,
+        "actual_amount_paise": 848215,
+        "settlement_id": "setl_FGQ5C34DXTAD1I",
+        "primary_cause": "utr_mismatch",
+        "contributing_causes": [
+          "mdr_fee",
+          "gst_on_fee"
+        ],
+        "explanation": "The reference UTR2026081668 did not match any settlement exactly, but it is a truncated copy of the bank UTR UTR2026081668800, and once paired the amounts reconcile to zero. The merchant booked \u20b98,661.00 gross; Razorpay settled \u20b98,482.15 after a processing fee of \u20b9151.57 and GST of \u20b927.28 on that fee. The money is correct \u2014 only the reference was stored in a shortened form, so no action is needed beyond noting the full UTR for your records.",
+        "confidence": 0.9,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "not found",
+            "detail": "No settlement has a UTR equal to this reference (UTR2026081668)."
+          },
+          {
+            "step": "try_fuzzy_match",
+            "result": "found",
+            "detail": "Matched settlement setl_FGQ5C34DXTAD1I: reference is the first 13 characters of UTR UTR2026081668800."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_FGQ5C34DXTAD1I. expected_amount_paise: 866100 actual_amount_paise: 848215 fees_paise: 15157 tax_paise: 2728 predicted_net_paise: 848215 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 15157 tds_at_1pct_paise: 8661 fx_markup_at_3pct_paise: 25983 residual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
+      },
+      {
+        "record_id": "ORD-1007",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 424300,
+        "actual_amount_paise": 387689,
+        "settlement_id": "setl_72KZ02XRGHC0CL",
+        "primary_cause": "partial_refund",
+        "contributing_causes": [
+          "mdr_fee",
+          "gst_on_fee"
+        ],
+        "explanation": "The settlement of \u20b93,876.89 is \u20b9278.50 short of what the merchant expected after the processing fee (\u20b974.25) and its GST (\u20b913.36) are accounted for. That \u20b9278.50 gap is 6.56% of the order value and matches none of the statutory deductions (TDS or FX markup), which points to a partial refund \u2014 part of the sale was returned to the customer after the original payment, so there was less left to settle. The finance team should check the order for a refund or return and confirm the refunded amount against Razorpay's records.",
+        "confidence": 0.75,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_72KZ02XRGHC0CL. Its UTR is exactly the reference on this record (UTR2026081644760)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_72KZ02XRGHC0CL. expected_amount_paise: 424300 actual_amount_paise: 387689 fees_paise: 7425 tax_paise: 1336 predicted_net_paise: 415539 residual_paise: 27850 residual_pct_of_expected: 6.5638 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 7425 tds_at_1pct_paise: 4243 fx_markup_at_3pct_paise: 12729 residual_in_rupees: 278.50"
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_72KZ02XRGHC0CL. expected_amount_paise: 424300 actual_amount_paise: 387689 fees_paise: 7425 tax_paise: 1336 predicted_net_paise: 415539 residual_paise: 27850 residual_pct_of_expected: 6.5638 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 7425 tds_at_1pct_paise: 4243 fx_markup_at_3pct_paise: 12729 residual_in_rupees: 278.50"
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_72KZ02XRGHC0CL. expected_amount_paise: 424300 actual_amount_paise: 387689 fees_paise: 7425 tax_paise: 1336 predicted_net_paise: 415539 residual_paise: 27850 residual_pct_of_expected: 6.5638 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 7425 tds_at_1pct_paise: 4243 fx_markup_at_3pct_paise: 12729 residual_in_rupees: 278.50"
+          }
+        ],
+        "status": "explained"
+      },
+      {
+        "record_id": "INV-1008",
+        "business_type": "saas",
+        "expected_amount_paise": 264200,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1009",
+        "business_type": "bookings",
+        "expected_amount_paise": 2223300,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1010",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 86300,
+        "actual_amount_paise": 84263,
+        "settlement_id": "setl_4ZW9XA3KX7EEDT",
+        "primary_cause": "mdr_fee",
+        "contributing_causes": [
+          "gst_on_fee"
+        ],
+        "explanation": "The settlement reconciles exactly. Your order was booked at \u20b9863.00 gross, and Razorpay settled \u20b9842.63 after deducting a processing fee of \u20b917.26 and the 18% GST on that fee of \u20b93.11. The residual is zero, so nothing is missing \u2014 the difference is entirely the standard processing fee and its GST. No action is needed.",
+        "confidence": 0.99,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_4ZW9XA3KX7EEDT. Its UTR is exactly the reference on this record (UTR2026081567433)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_4ZW9XA3KX7EEDT. expected_amount_paise: 86300 actual_amount_paise: 84263 fees_paise: 1726 tax_paise: 311 predicted_net_paise: 84263 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 1726 tds_at_1pct_paise: 863 fx_markup_at_3pct_paise: 2589 residual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
+      },
+      {
+        "record_id": "ORD-1011",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 253100,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1012",
+        "business_type": "saas",
+        "expected_amount_paise": 1937800,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1013",
+        "business_type": "saas",
+        "expected_amount_paise": 2364200,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1014",
+        "business_type": "bookings",
+        "expected_amount_paise": 386100,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1015",
+        "business_type": "bookings",
+        "expected_amount_paise": 1701400,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1016",
+        "business_type": "saas",
+        "expected_amount_paise": 845600,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1017",
+        "business_type": "bookings",
+        "expected_amount_paise": 860400,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1018",
+        "business_type": "saas",
+        "expected_amount_paise": 2276400,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1019",
+        "business_type": "bookings",
+        "expected_amount_paise": 2967300,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1020",
+        "business_type": "saas",
+        "expected_amount_paise": 836000,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1021",
+        "business_type": "saas",
+        "expected_amount_paise": 449100,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1022",
+        "business_type": "saas",
+        "expected_amount_paise": 1895100,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1023",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 626416,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1024",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 205200,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1025",
+        "business_type": "saas",
+        "expected_amount_paise": 1160418,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1026",
+        "business_type": "saas",
+        "expected_amount_paise": 1889400,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1027",
+        "business_type": "bookings",
+        "expected_amount_paise": 2958900,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1028",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 669900,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1029",
+        "business_type": "saas",
+        "expected_amount_paise": 1996100,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1030",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 333500,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1031",
+        "business_type": "bookings",
+        "expected_amount_paise": 1908900,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1032",
+        "business_type": "saas",
+        "expected_amount_paise": 725900,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1033",
+        "business_type": "saas",
+        "expected_amount_paise": 1903400,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1034",
+        "business_type": "bookings",
+        "expected_amount_paise": 1422100,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1035",
+        "business_type": "saas",
+        "expected_amount_paise": 687800,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1036",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 703400,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1037",
+        "business_type": "bookings",
+        "expected_amount_paise": 4006900,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1038",
+        "business_type": "bookings",
+        "expected_amount_paise": 2002800,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1039",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 413900,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1040",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 62900,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1041",
+        "business_type": "bookings",
+        "expected_amount_paise": 2774400,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1042",
+        "business_type": "bookings",
+        "expected_amount_paise": 1484000,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1043",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 156100,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1044",
+        "business_type": "bookings",
+        "expected_amount_paise": 1900900,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1045",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 366500,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1046",
+        "business_type": "bookings",
+        "expected_amount_paise": 3249600,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1047",
+        "business_type": "saas",
+        "expected_amount_paise": 1638300,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1048",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 641700,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1049",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 537600,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1050",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 404200,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1051",
+        "business_type": "bookings",
+        "expected_amount_paise": 2025600,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "ORD-1052",
+        "business_type": "ecommerce",
+        "expected_amount_paise": 297600,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "INV-1053",
+        "business_type": "saas",
+        "expected_amount_paise": 839100,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      },
+      {
+        "record_id": "BKG-1054",
+        "business_type": "bookings",
+        "expected_amount_paise": 314000,
+        "actual_amount_paise": null,
+        "settlement_id": null,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The agent did not return a diagnosis we could read for this record.",
+        "confidence": 0.0,
+        "trace": [],
+        "status": "unresolved"
+      }
+    ]
+  }
+}
