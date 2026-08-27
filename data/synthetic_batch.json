@@ -1,0 +1,823 @@
+{
+  "expected_records": [
+    {
+      "record_id": "ORD-1000",
+      "expected_amount_paise": 354100,
+      "reference_hint": "UTR2026080283579",
+      "business_type": "ecommerce",
+      "created_at": "2026-07-31T10:00:00"
+    },
+    {
+      "record_id": "BKG-1001",
+      "expected_amount_paise": 2618168,
+      "reference_hint": "UTR2026081042953",
+      "business_type": "bookings",
+      "created_at": "2026-08-08T05:00:00"
+    },
+    {
+      "record_id": "ORD-1002",
+      "expected_amount_paise": 440000,
+      "reference_hint": "UTR2026072991",
+      "business_type": "ecommerce",
+      "created_at": "2026-07-27T19:00:00"
+    },
+    {
+      "record_id": "INV-1003",
+      "expected_amount_paise": 289700,
+      "reference_hint": "UTR2026081573699",
+      "business_type": "saas",
+      "created_at": "2026-08-13T06:00:00"
+    },
+    {
+      "record_id": "INV-1004",
+      "expected_amount_paise": 1407300,
+      "reference_hint": "UTR2026080177839",
+      "business_type": "saas",
+      "created_at": "2026-07-30T04:00:00"
+    },
+    {
+      "record_id": "ORD-1005",
+      "expected_amount_paise": 427600,
+      "reference_hint": "UTR2026081685525",
+      "business_type": "ecommerce",
+      "created_at": "2026-08-14T07:00:00"
+    },
+    {
+      "record_id": "BKG-1006",
+      "expected_amount_paise": 866100,
+      "reference_hint": "UTR2026081668",
+      "business_type": "bookings",
+      "created_at": "2026-08-13T18:00:00"
+    },
+    {
+      "record_id": "ORD-1007",
+      "expected_amount_paise": 424300,
+      "reference_hint": "UTR2026081644760",
+      "business_type": "ecommerce",
+      "created_at": "2026-08-14T12:00:00"
+    },
+    {
+      "record_id": "INV-1008",
+      "expected_amount_paise": 264200,
+      "reference_hint": "UTR2026080430635",
+      "business_type": "saas",
+      "created_at": "2026-08-02T09:00:00"
+    },
+    {
+      "record_id": "BKG-1009",
+      "expected_amount_paise": 2223300,
+      "reference_hint": "UTR2026081441285",
+      "business_type": "bookings",
+      "created_at": "2026-08-12T18:00:00"
+    },
+    {
+      "record_id": "ORD-1010",
+      "expected_amount_paise": 86300,
+      "reference_hint": "UTR2026081567433",
+      "business_type": "ecommerce",
+      "created_at": "2026-08-13T13:00:00"
+    },
+    {
+      "record_id": "ORD-1011",
+      "expected_amount_paise": 253100,
+      "reference_hint": "UTR2026081393130",
+      "business_type": "ecommerce",
+      "created_at": "2026-08-11T05:00:00"
+    },
+    {
+      "record_id": "INV-1012",
+      "expected_amount_paise": 1937800,
+      "reference_hint": "UTR2026082319862",
+      "business_type": "saas",
+      "created_at": "2026-08-23T20:00:00"
+    },
+    {
+      "record_id": "INV-1013",
+      "expected_amount_paise": 2364200,
+      "reference_hint": "UTR2026081081511",
+      "business_type": "saas",
+      "created_at": "2026-08-10T00:00:00"
+    },
+    {
+      "record_id": "BKG-1014",
+      "expected_amount_paise": 386100,
+      "reference_hint": "UTR2026072726704",
+      "business_type": "bookings",
+      "created_at": "2026-07-25T13:00:00"
+    },
+    {
+      "record_id": "BKG-1015",
+      "expected_amount_paise": 1701400,
+      "reference_hint": "UTR2026072653540",
+      "business_type": "bookings",
+      "created_at": "2026-07-24T19:00:00"
+    },
+    {
+      "record_id": "INV-1016",
+      "expected_amount_paise": 845600,
+      "reference_hint": "UTR2026081662227",
+      "business_type": "saas",
+      "created_at": "2026-08-14T00:00:00"
+    },
+    {
+      "record_id": "BKG-1017",
+      "expected_amount_paise": 860400,
+      "reference_hint": "UTR2026080367199",
+      "business_type": "bookings",
+      "created_at": "2026-08-01T11:00:00"
+    },
+    {
+      "record_id": "INV-1018",
+      "expected_amount_paise": 2276400,
+      "reference_hint": "UTR2026081276469",
+      "business_type": "saas",
+      "created_at": "2026-08-10T05:00:00"
+    },
+    {
+      "record_id": "BKG-1019",
+      "expected_amount_paise": 2967300,
+      "reference_hint": "UTR2026072852237",
+      "business_type": "bookings",
+      "created_at": "2026-07-26T06:00:00"
+    },
+    {
+      "record_id": "INV-1020",
+      "expected_amount_paise": 836000,
+      "reference_hint": "UTR2026072816057",
+      "business_type": "saas",
+      "created_at": "2026-07-26T18:00:00"
+    },
+    {
+      "record_id": "INV-1021",
+      "expected_amount_paise": 449100,
+      "reference_hint": "UTR2026072977889",
+      "business_type": "saas",
+      "created_at": "2026-07-27T11:00:00"
+    },
+    {
+      "record_id": "INV-1022",
+      "expected_amount_paise": 1895100,
+      "reference_hint": "UTR2026073130861",
+      "business_type": "saas",
+      "created_at": "2026-07-31T00:00:00"
+    },
+    {
+      "record_id": "ORD-1023",
+      "expected_amount_paise": 626416,
+      "reference_hint": "UTR2026072642406",
+      "business_type": "ecommerce",
+      "created_at": "2026-07-24T09:00:00"
+    },
+    {
+      "record_id": "ORD-1024",
+      "expected_amount_paise": 205200,
+      "reference_hint": "UTR2026082363424",
+      "business_type": "ecommerce",
+      "created_at": "2026-08-23T10:00:00"
+    },
+    {
+      "record_id": "INV-1025",
+      "expected_amount_paise": 1160418,
+      "reference_hint": "UTR2026080537110",
+      "business_type": "saas",
+      "created_at": "2026-08-03T10:00:00"
+    },
+    {
+      "record_id": "INV-1026",
+      "expected_amount_paise": 1889400,
+      "reference_hint": "UTR2026072838760",
+      "business_type": "saas",
+      "created_at": "2026-07-26T05:00:00"
+    },
+    {
+      "record_id": "BKG-1027",
+      "expected_amount_paise": 2958900,
+      "reference_hint": "UTR2026081844099",
+      "business_type": "bookings",
+      "created_at": "2026-08-16T10:00:00"
+    },
+    {
+      "record_id": "ORD-1028",
+      "expected_amount_paise": 669900,
+      "reference_hint": "UTR2026080336",
+      "business_type": "ecommerce",
+      "created_at": "2026-07-31T23:00:00"
+    },
+    {
+      "record_id": "INV-1029",
+      "expected_amount_paise": 1996100,
+      "reference_hint": "UTR2026082359192",
+      "business_type": "saas",
+      "created_at": "2026-08-20T15:00:00"
+    },
+    {
+      "record_id": "ORD-1030",
+      "expected_amount_paise": 333500,
+      "reference_hint": "UTR2026082074251",
+      "business_type": "ecommerce",
+      "created_at": "2026-08-18T08:00:00"
+    },
+    {
+      "record_id": "BKG-1031",
+      "expected_amount_paise": 1908900,
+      "reference_hint": "UTR2026081269087",
+      "business_type": "bookings",
+      "created_at": "2026-08-10T17:00:00"
+    },
+    {
+      "record_id": "INV-1032",
+      "expected_amount_paise": 725900,
+      "reference_hint": "UTR2026082074038",
+      "business_type": "saas",
+      "created_at": "2026-08-18T17:00:00"
+    },
+    {
+      "record_id": "INV-1033",
+      "expected_amount_paise": 1903400,
+      "reference_hint": "UTR2026081245509",
+      "business_type": "saas",
+      "created_at": "2026-08-10T13:00:00"
+    },
+    {
+      "record_id": "BKG-1034",
+      "expected_amount_paise": 1422100,
+      "reference_hint": "UTR2026082257301",
+      "business_type": "bookings",
+      "created_at": "2026-08-22T16:00:00"
+    },
+    {
+      "record_id": "INV-1035",
+      "expected_amount_paise": 687800,
+      "reference_hint": "UTR2026081415965",
+      "business_type": "saas",
+      "created_at": "2026-08-12T00:00:00"
+    },
+    {
+      "record_id": "ORD-1036",
+      "expected_amount_paise": 703400,
+      "reference_hint": "UTR2026082092502",
+      "business_type": "ecommerce",
+      "created_at": "2026-08-18T12:00:00"
+    },
+    {
+      "record_id": "BKG-1037",
+      "expected_amount_paise": 4006900,
+      "reference_hint": "UTR2026081017894",
+      "business_type": "bookings",
+      "created_at": "2026-08-07T15:00:00"
+    },
+    {
+      "record_id": "BKG-1038",
+      "expected_amount_paise": 2002800,
+      "reference_hint": "UTR2026073191927",
+      "business_type": "bookings",
+      "created_at": "2026-07-29T10:00:00"
+    },
+    {
+      "record_id": "ORD-1039",
+      "expected_amount_paise": 413900,
+      "reference_hint": "UTR2026073145",
+      "business_type": "ecommerce",
+      "created_at": "2026-07-29T15:00:00"
+    },
+    {
+      "record_id": "ORD-1040",
+      "expected_amount_paise": 62900,
+      "reference_hint": "UTR2026073095394",
+      "business_type": "ecommerce",
+      "created_at": "2026-07-27T19:00:00"
+    },
+    {
+      "record_id": "BKG-1041",
+      "expected_amount_paise": 2774400,
+      "reference_hint": "UTR2026072721542",
+      "business_type": "bookings",
+      "created_at": "2026-07-25T07:00:00"
+    },
+    {
+      "record_id": "BKG-1042",
+      "expected_amount_paise": 1484000,
+      "reference_hint": "UTR2026081467424",
+      "business_type": "bookings",
+      "created_at": "2026-08-12T07:00:00"
+    },
+    {
+      "record_id": "ORD-1043",
+      "expected_amount_paise": 156100,
+      "reference_hint": "UTR2026080745838",
+      "business_type": "ecommerce",
+      "created_at": "2026-08-05T02:00:00"
+    },
+    {
+      "record_id": "BKG-1044",
+      "expected_amount_paise": 1900900,
+      "reference_hint": "UTR2026072886931",
+      "business_type": "bookings",
+      "created_at": "2026-07-26T00:00:00"
+    },
+    {
+      "record_id": "ORD-1045",
+      "expected_amount_paise": 366500,
+      "reference_hint": "UTR2026081351704",
+      "business_type": "ecommerce",
+      "created_at": "2026-08-13T00:00:00"
+    },
+    {
+      "record_id": "BKG-1046",
+      "expected_amount_paise": 3249600,
+      "reference_hint": "UTR2026073195461",
+      "business_type": "bookings",
+      "created_at": "2026-07-29T12:00:00"
+    },
+    {
+      "record_id": "INV-1047",
+      "expected_amount_paise": 1638300,
+      "reference_hint": "UTR2026072962098",
+      "business_type": "saas",
+      "created_at": "2026-07-26T16:00:00"
+    },
+    {
+      "record_id": "ORD-1048",
+      "expected_amount_paise": 641700,
+      "reference_hint": "UTR2026082023173",
+      "business_type": "ecommerce",
+      "created_at": "2026-08-18T11:00:00"
+    },
+    {
+      "record_id": "ORD-1049",
+      "expected_amount_paise": 537600,
+      "reference_hint": "UTR2026080228758",
+      "business_type": "ecommerce",
+      "created_at": "2026-07-30T17:00:00"
+    },
+    {
+      "record_id": "ORD-1050",
+      "expected_amount_paise": 404200,
+      "reference_hint": "UTR2026072673335",
+      "business_type": "ecommerce",
+      "created_at": "2026-07-24T15:00:00"
+    },
+    {
+      "record_id": "BKG-1051",
+      "expected_amount_paise": 2025600,
+      "reference_hint": "UTR2026072993442",
+      "business_type": "bookings",
+      "created_at": "2026-07-27T17:00:00"
+    },
+    {
+      "record_id": "ORD-1052",
+      "expected_amount_paise": 297600,
+      "reference_hint": "UTR2026073027322",
+      "business_type": "ecommerce",
+      "created_at": "2026-07-28T11:00:00"
+    },
+    {
+      "record_id": "INV-1053",
+      "expected_amount_paise": 839100,
+      "reference_hint": "UTR2026072662089",
+      "business_type": "saas",
+      "created_at": "2026-07-24T03:00:00"
+    },
+    {
+      "record_id": "BKG-1054",
+      "expected_amount_paise": 314000,
+      "reference_hint": "UTR2026082239015",
+      "business_type": "bookings",
+      "created_at": "2026-08-22T04:00:00"
+    }
+  ],
+  "settlements": [
+    {
+      "settlement_id": "setl_JEXQ77AWUDTSEM",
+      "amount_paise": 2161385,
+      "fees_paise": 52470,
+      "tax_paise": 9445,
+      "utr": "UTR2026081441285",
+      "created_at": "2026-08-14T23:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_4ZW9XA3KX7EEDT",
+      "amount_paise": 84263,
+      "fees_paise": 1726,
+      "tax_paise": 311,
+      "utr": "UTR2026081567433",
+      "created_at": "2026-08-15T15:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_T0PVN9ER14FFYV",
+      "amount_paise": 283240,
+      "fees_paise": 6197,
+      "tax_paise": 1115,
+      "utr": "UTR2026080283579",
+      "created_at": "2026-08-02T13:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_V2HEIFJFC2V37P",
+      "amount_paise": 1961441,
+      "fees_paise": 35049,
+      "tax_paise": 6309,
+      "utr": "UTR2026073191927",
+      "created_at": "2026-07-31T14:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_IQVNB4GH2M5ZJA",
+      "amount_paise": 1812214,
+      "fees_paise": 33406,
+      "tax_paise": 6013,
+      "utr": "UTR2026081269087",
+      "created_at": "2026-08-12T21:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_5RBW2ZLAOI4E8X",
+      "amount_paise": 1408835,
+      "fees_paise": 25970,
+      "tax_paise": 4675,
+      "utr": "UTR2026081467424",
+      "created_at": "2026-08-14T11:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_LOOKEP7Y6WKTAK",
+      "amount_paise": 2222675,
+      "fees_paise": 45528,
+      "tax_paise": 8195,
+      "utr": "UTR2026081276469",
+      "created_at": "2026-08-12T09:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_OZCYWD14VE92MP",
+      "amount_paise": 1940513,
+      "fees_paise": 47108,
+      "tax_paise": 8479,
+      "utr": "UTR2026082359192",
+      "created_at": "2026-08-23T01:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_4WIRE8QJNV8Z2F",
+      "amount_paise": 656067,
+      "fees_paise": 11723,
+      "tax_paise": 2110,
+      "utr": "UTR2026080336130",
+      "created_at": "2026-08-03T02:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_9TZE5R5UQPGB7R",
+      "amount_paise": 489653,
+      "fees_paise": 16232,
+      "tax_paise": 2922,
+      "utr": "UTR2026081415965",
+      "created_at": "2026-08-14T04:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_DNMKZA3OA52960",
+      "amount_paise": 395853,
+      "fees_paise": 7074,
+      "tax_paise": 1273,
+      "utr": "UTR2026072673335",
+      "created_at": "2026-07-26T21:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_SRCBPLJD84U89Y",
+      "amount_paise": 402374,
+      "fees_paise": 9768,
+      "tax_paise": 1758,
+      "utr": "UTR2026073145683",
+      "created_at": "2026-07-31T21:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_LL8OS9XTOGN1W1",
+      "amount_paise": 2689365,
+      "fees_paise": 48552,
+      "tax_paise": 8739,
+      "utr": "UTR2026072721542",
+      "created_at": "2026-07-27T14:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_R23GDPPQ0Y9DOM",
+      "amount_paise": 418770,
+      "fees_paise": 7483,
+      "tax_paise": 1347,
+      "utr": "UTR2026081685525",
+      "created_at": "2026-08-16T16:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_TIRZQAKOIXNTM9",
+      "amount_paise": 698426,
+      "fees_paise": 17131,
+      "tax_paise": 3084,
+      "utr": "UTR2026082074038",
+      "created_at": "2026-08-20T23:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_84AZYTJXEPQ85J",
+      "amount_paise": 2608550,
+      "fees_paise": 53432,
+      "tax_paise": 9618,
+      "utr": "UTR2026081042953",
+      "created_at": "2026-08-10T13:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_PK9P38QOLDFORX",
+      "amount_paise": 61416,
+      "fees_paise": 1258,
+      "tax_paise": 226,
+      "utr": "UTR2026073095394",
+      "created_at": "2026-07-30T03:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_4J1RIPZIM6CFNF",
+      "amount_paise": 624115,
+      "fees_paise": 12784,
+      "tax_paise": 2301,
+      "utr": "UTR2026072642406",
+      "created_at": "2026-07-26T13:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_V08HHXFGCAQVKI",
+      "amount_paise": 3895316,
+      "fees_paise": 94563,
+      "tax_paise": 17021,
+      "utr": "UTR2026081017894",
+      "created_at": "2026-08-10T00:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_39TEX8FSV871YZ",
+      "amount_paise": 283717,
+      "fees_paise": 5070,
+      "tax_paise": 913,
+      "utr": "UTR2026081573699",
+      "created_at": "2026-08-15T07:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_PY6B2KNFTU2GC5",
+      "amount_paise": 628449,
+      "fees_paise": 11230,
+      "tax_paise": 2021,
+      "utr": "UTR2026082023173",
+      "created_at": "2026-08-20T21:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_25NSJF678K52QC",
+      "amount_paise": 291455,
+      "fees_paise": 5208,
+      "tax_paise": 937,
+      "utr": "UTR2026073027322",
+      "created_at": "2026-07-30T14:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_IR4COWGZRIXA11",
+      "amount_paise": 810377,
+      "fees_paise": 14630,
+      "tax_paise": 2633,
+      "utr": "UTR2026072816057",
+      "created_at": "2026-07-28T18:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_2OY0IFZNBQH7M3",
+      "amount_paise": 1535079,
+      "fees_paise": 29775,
+      "tax_paise": 5360,
+      "utr": "UTR2026072653540",
+      "created_at": "2026-07-26T21:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_QPHR62GDSWM31Y",
+      "amount_paise": 2884667,
+      "fees_paise": 70028,
+      "tax_paise": 12605,
+      "utr": "UTR2026072852237",
+      "created_at": "2026-07-28T16:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_JRNY20479T6VXD",
+      "amount_paise": 1850384,
+      "fees_paise": 33064,
+      "tax_paise": 5952,
+      "utr": "UTR2026072838760",
+      "created_at": "2026-07-28T12:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_NHL1N13JCAT9MX",
+      "amount_paise": 2868209,
+      "fees_paise": 51781,
+      "tax_paise": 9321,
+      "utr": "UTR2026081844099",
+      "created_at": "2026-08-18T10:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_3O18A5UR7KO64T",
+      "amount_paise": 1156155,
+      "fees_paise": 23682,
+      "tax_paise": 4263,
+      "utr": "UTR2026080537110",
+      "created_at": "2026-08-05T10:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_4SJ6BW3BME9FPZ",
+      "amount_paise": 168076,
+      "fees_paise": 4429,
+      "tax_paise": 797,
+      "utr": "UTR2026081393130",
+      "created_at": "2026-08-13T08:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_L58KXO9T7E8G8J",
+      "amount_paise": 822052,
+      "fees_paise": 19956,
+      "tax_paise": 3592,
+      "utr": "UTR2026081662227",
+      "created_at": "2026-08-16T03:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_BN78BMYYMU5907",
+      "amount_paise": 272739,
+      "fees_paise": 9112,
+      "tax_paise": 1640,
+      "utr": "UTR2026072726704",
+      "created_at": "2026-07-27T19:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_UX5QRL1N759IN4",
+      "amount_paise": 1799012,
+      "fees_paise": 38018,
+      "tax_paise": 6843,
+      "utr": "UTR2026072886931",
+      "created_at": "2026-07-28T04:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_VSNUJZA7TZ0YNC",
+      "amount_paise": 840095,
+      "fees_paise": 17208,
+      "tax_paise": 3097,
+      "utr": "UTR2026080367199",
+      "created_at": "2026-08-03T16:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_FGQ5C34DXTAD1I",
+      "amount_paise": 848215,
+      "fees_paise": 15157,
+      "tax_paise": 2728,
+      "utr": "UTR2026081668800",
+      "created_at": "2026-08-16T02:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_GJ11YEDWB2BNE6",
+      "amount_paise": 1969192,
+      "fees_paise": 47804,
+      "tax_paise": 8605,
+      "utr": "UTR2026072993442",
+      "created_at": "2026-07-29T20:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_YF38DIUOVW1N6K",
+      "amount_paise": 686798,
+      "fees_paise": 14068,
+      "tax_paise": 2532,
+      "utr": "UTR2026082092502",
+      "created_at": "2026-08-20T21:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_IWQY6QKTC89K8Y",
+      "amount_paise": 524913,
+      "fees_paise": 10752,
+      "tax_paise": 1935,
+      "utr": "UTR2026080228758",
+      "created_at": "2026-08-02T02:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_ORQQFGV0EC14M2",
+      "amount_paise": 152416,
+      "fees_paise": 3122,
+      "tax_paise": 562,
+      "utr": "UTR2026080745838",
+      "created_at": "2026-08-07T10:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_KXVF1T2TALA753",
+      "amount_paise": 427747,
+      "fees_paise": 10384,
+      "tax_paise": 1869,
+      "utr": "UTR2026072991959",
+      "created_at": "2026-07-29T20:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_CS4CC5O7UUBCXU",
+      "amount_paise": 248917,
+      "fees_paise": 6235,
+      "tax_paise": 1122,
+      "utr": "UTR2026080430635",
+      "created_at": "2026-08-04T17:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_72KZ02XRGHC0CL",
+      "amount_paise": 387689,
+      "fees_paise": 7425,
+      "tax_paise": 1336,
+      "utr": "UTR2026081644760",
+      "created_at": "2026-08-16T18:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_D8W3ZP08J3TRP0",
+      "amount_paise": 256722,
+      "fees_paise": 7871,
+      "tax_paise": 1417,
+      "utr": "UTR2026082074251",
+      "created_at": "2026-08-20T14:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_82N2ATQYYV37DI",
+      "amount_paise": 815732,
+      "fees_paise": 19803,
+      "tax_paise": 3565,
+      "utr": "UTR2026072662089",
+      "created_at": "2026-07-26T13:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_QU7EEQTUL1P36P",
+      "amount_paise": 439826,
+      "fees_paise": 7859,
+      "tax_paise": 1415,
+      "utr": "UTR2026072977889",
+      "created_at": "2026-07-29T13:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_LIZL08YG0JV1V9",
+      "amount_paise": 1850394,
+      "fees_paise": 44920,
+      "tax_paise": 8086,
+      "utr": "UTR2026081245509",
+      "created_at": "2026-08-12T20:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_9RBSV55PSQ0OXF",
+      "amount_paise": 3172909,
+      "fees_paise": 64992,
+      "tax_paise": 11699,
+      "utr": "UTR2026073195461",
+      "created_at": "2026-07-31T22:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_QICATVAZCCBLSK",
+      "amount_paise": 1374088,
+      "fees_paise": 28146,
+      "tax_paise": 5066,
+      "utr": "UTR2026080177839",
+      "created_at": "2026-08-01T11:00:00",
+      "status": "processed"
+    },
+    {
+      "settlement_id": "setl_X444NLZ15BCW79",
+      "amount_paise": 1599636,
+      "fees_paise": 32766,
+      "tax_paise": 5898,
+      "utr": "UTR2026072962098",
+      "created_at": "2026-07-29T01:00:00",
+      "status": "processed"
+    }
+  ]
+}

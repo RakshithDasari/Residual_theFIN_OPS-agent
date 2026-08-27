@@ -1,0 +1,451 @@
+[
+  {
+    "record_id": "ORD-1000",
+    "primary_cause": "partial_refund",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_T0PVN9ER14FFYV"
+  },
+  {
+    "record_id": "BKG-1001",
+    "primary_cause": "gst_on_fee",
+    "contributing_causes": [
+      "mdr_fee"
+    ],
+    "settlement_id": "setl_84AZYTJXEPQ85J"
+  },
+  {
+    "record_id": "ORD-1002",
+    "primary_cause": "utr_mismatch",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_KXVF1T2TALA753"
+  },
+  {
+    "record_id": "INV-1003",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_39TEX8FSV871YZ"
+  },
+  {
+    "record_id": "INV-1004",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_QICATVAZCCBLSK"
+  },
+  {
+    "record_id": "ORD-1005",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_R23GDPPQ0Y9DOM"
+  },
+  {
+    "record_id": "BKG-1006",
+    "primary_cause": "utr_mismatch",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_FGQ5C34DXTAD1I"
+  },
+  {
+    "record_id": "ORD-1007",
+    "primary_cause": "unresolved",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_72KZ02XRGHC0CL"
+  },
+  {
+    "record_id": "INV-1008",
+    "primary_cause": "fx_markup",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_CS4CC5O7UUBCXU"
+  },
+  {
+    "record_id": "BKG-1009",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_JEXQ77AWUDTSEM"
+  },
+  {
+    "record_id": "ORD-1010",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_4ZW9XA3KX7EEDT"
+  },
+  {
+    "record_id": "ORD-1011",
+    "primary_cause": "partial_refund",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_4SJ6BW3BME9FPZ"
+  },
+  {
+    "record_id": "INV-1012",
+    "primary_cause": "in_transit",
+    "contributing_causes": [],
+    "settlement_id": null
+  },
+  {
+    "record_id": "INV-1013",
+    "primary_cause": "dispute_hold",
+    "contributing_causes": [],
+    "settlement_id": null
+  },
+  {
+    "record_id": "BKG-1014",
+    "primary_cause": "partial_refund",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_BN78BMYYMU5907"
+  },
+  {
+    "record_id": "BKG-1015",
+    "primary_cause": "unresolved",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_2OY0IFZNBQH7M3"
+  },
+  {
+    "record_id": "INV-1016",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_L58KXO9T7E8G8J"
+  },
+  {
+    "record_id": "BKG-1017",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_VSNUJZA7TZ0YNC"
+  },
+  {
+    "record_id": "INV-1018",
+    "primary_cause": "rounding_drift",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_LOOKEP7Y6WKTAK"
+  },
+  {
+    "record_id": "BKG-1019",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_QPHR62GDSWM31Y"
+  },
+  {
+    "record_id": "INV-1020",
+    "primary_cause": "tds",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_IR4COWGZRIXA11"
+  },
+  {
+    "record_id": "INV-1021",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_QU7EEQTUL1P36P"
+  },
+  {
+    "record_id": "INV-1022",
+    "primary_cause": "dispute_hold",
+    "contributing_causes": [],
+    "settlement_id": null
+  },
+  {
+    "record_id": "ORD-1023",
+    "primary_cause": "gst_on_fee",
+    "contributing_causes": [
+      "mdr_fee"
+    ],
+    "settlement_id": "setl_4J1RIPZIM6CFNF"
+  },
+  {
+    "record_id": "ORD-1024",
+    "primary_cause": "in_transit",
+    "contributing_causes": [],
+    "settlement_id": null
+  },
+  {
+    "record_id": "INV-1025",
+    "primary_cause": "gst_on_fee",
+    "contributing_causes": [
+      "mdr_fee"
+    ],
+    "settlement_id": "setl_3O18A5UR7KO64T"
+  },
+  {
+    "record_id": "INV-1026",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_JRNY20479T6VXD"
+  },
+  {
+    "record_id": "BKG-1027",
+    "primary_cause": "tds",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_NHL1N13JCAT9MX"
+  },
+  {
+    "record_id": "ORD-1028",
+    "primary_cause": "utr_mismatch",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_4WIRE8QJNV8Z2F"
+  },
+  {
+    "record_id": "INV-1029",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_OZCYWD14VE92MP"
+  },
+  {
+    "record_id": "ORD-1030",
+    "primary_cause": "partial_refund",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_D8W3ZP08J3TRP0"
+  },
+  {
+    "record_id": "BKG-1031",
+    "primary_cause": "fx_markup",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_IQVNB4GH2M5ZJA"
+  },
+  {
+    "record_id": "INV-1032",
+    "primary_cause": "tds",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_TIRZQAKOIXNTM9"
+  },
+  {
+    "record_id": "INV-1033",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_LIZL08YG0JV1V9"
+  },
+  {
+    "record_id": "BKG-1034",
+    "primary_cause": "in_transit",
+    "contributing_causes": [],
+    "settlement_id": null
+  },
+  {
+    "record_id": "INV-1035",
+    "primary_cause": "partial_refund",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_9TZE5R5UQPGB7R"
+  },
+  {
+    "record_id": "ORD-1036",
+    "primary_cause": "rounding_drift",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_YF38DIUOVW1N6K"
+  },
+  {
+    "record_id": "BKG-1037",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_V08HHXFGCAQVKI"
+  },
+  {
+    "record_id": "BKG-1038",
+    "primary_cause": "rounding_drift",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_V2HEIFJFC2V37P"
+  },
+  {
+    "record_id": "ORD-1039",
+    "primary_cause": "utr_mismatch",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_SRCBPLJD84U89Y"
+  },
+  {
+    "record_id": "ORD-1040",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_PK9P38QOLDFORX"
+  },
+  {
+    "record_id": "BKG-1041",
+    "primary_cause": "tds",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_LL8OS9XTOGN1W1"
+  },
+  {
+    "record_id": "BKG-1042",
+    "primary_cause": "fx_markup",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_5RBW2ZLAOI4E8X"
+  },
+  {
+    "record_id": "ORD-1043",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_ORQQFGV0EC14M2"
+  },
+  {
+    "record_id": "BKG-1044",
+    "primary_cause": "fx_markup",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_UX5QRL1N759IN4"
+  },
+  {
+    "record_id": "ORD-1045",
+    "primary_cause": "dispute_hold",
+    "contributing_causes": [],
+    "settlement_id": null
+  },
+  {
+    "record_id": "BKG-1046",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_9RBSV55PSQ0OXF"
+  },
+  {
+    "record_id": "INV-1047",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_X444NLZ15BCW79"
+  },
+  {
+    "record_id": "ORD-1048",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_PY6B2KNFTU2GC5"
+  },
+  {
+    "record_id": "ORD-1049",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_IWQY6QKTC89K8Y"
+  },
+  {
+    "record_id": "ORD-1050",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_DNMKZA3OA52960"
+  },
+  {
+    "record_id": "BKG-1051",
+    "primary_cause": "rounding_drift",
+    "contributing_causes": [
+      "mdr_fee",
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_GJ11YEDWB2BNE6"
+  },
+  {
+    "record_id": "ORD-1052",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_25NSJF678K52QC"
+  },
+  {
+    "record_id": "INV-1053",
+    "primary_cause": "mdr_fee",
+    "contributing_causes": [
+      "gst_on_fee"
+    ],
+    "settlement_id": "setl_82N2ATQYYV37DI"
+  },
+  {
+    "record_id": "BKG-1054",
+    "primary_cause": "in_transit",
+    "contributing_causes": [],
+    "settlement_id": null
+  }
+]
