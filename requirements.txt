@@ -1,6 +1,6 @@
 # Pins verified against PyPI on 2026-08-24. Do not float these — deployment depends on them.
 agno==2.9.0
-anthropic==1.0.0
+openai==3.5.0
 fastapi==0.141.1
 uvicorn==0.52.4
 pydantic==2.13.4

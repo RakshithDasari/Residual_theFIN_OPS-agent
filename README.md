@@ -24,10 +24,18 @@ Accuracy figures are whatever the eval script computes, reported per cause, incl
 the causes the agent handles badly. See [NOTES.md](NOTES.md) for every locked decision
 and its reasoning.
 
+The agent uses DeepSeek V4 Flash through NVIDIA's OpenAI-compatible API.
+
+## Live API boundary
+
+The Razorpay test credentials successfully authenticated against both `GET /v1/settlements/`
+and `GET /v1/settlements/recon/combined`; each returned zero records. Test-mode settlement
+history is therefore not used to inflate the batch - the 55-record workload remains synthetic.
+
 ## Status
 
-In development. Agent layer is verified offline across all 55 records; the first live
-run is pending an API key.
+In development. Agent and tool layers are verified offline across all 55 records. NVIDIA's
+current budget-pool quota must be restored before the first live agent run.
 
 ## Setup
 
@@ -55,5 +63,4 @@ python playground.py
 ```
 
 It binds one record at startup (`PLAYGROUND_RECORD` in `playground.py`); change the index
-to reconcile a different one. Needs `ANTHROPIC_API_KEY`.
-
+to reconcile a different one. Needs `NVIDIA_API_KEY`.

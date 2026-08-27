@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 
-from agno.models.anthropic import Claude
 from dotenv import load_dotenv
+from agno.models.openai import OpenAIChat
 
 load_dotenv()
 
@@ -12,10 +12,15 @@ DATA_DIR = BASE_DIR / "data"
 BATCH_FILE = DATA_DIR / "synthetic_batch.json"
 GROUND_TRUTH_FILE = DATA_DIR / "ground_truth.json"
 
-MODEL_ID = "claude-sonnet-5"
+MODEL_ID = "deepseek-ai/deepseek-v4-flash-0731"
 
-model = Claude(
+model = OpenAIChat(
     id=MODEL_ID,
-    api_key=os.getenv("ANTHROPIC_API_KEY"),
+    base_url="https://integrate.api.nvidia.com/v1",
+    api_key=os.getenv("NVIDIA_API_KEY"),
     temperature=0,
+    top_p=0.95,
+    max_tokens=16384,
+    extra_body={"chat_template_kwargs": {"thinking": True, "reasoning_effort": "high"}},
+    supports_native_structured_outputs=False,
 )

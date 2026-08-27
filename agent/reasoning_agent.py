@@ -175,7 +175,9 @@ if __name__ == "__main__":
     assert all(cause.value in system_message for cause in DiscrepancyCause), "a cause never reaches the model"
     assert len(reconciliation_agent.tools) == 4
     assert reconciliation_agent.tool_call_limit == MAX_TOOL_CALLS
-    assert reconciliation_agent.model.temperature == 0, "eval numbers have to be reproducible"
+    assert reconciliation_agent.model.temperature == 0
+    assert reconciliation_agent.model.top_p == 0.95
+    assert reconciliation_agent.model.supports_native_structured_outputs is False
 
     # exclude=True stops the answer key being serialised; it does not stop attribute
     # access. This is the check that the prompt is built the safe way.

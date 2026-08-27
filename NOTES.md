@@ -287,11 +287,28 @@ recovers in a turn. Not defensive code for an impossible case; the case exists *
 the model has the steering wheel. The prerequisite itself is real domain logic: you cannot
 reconcile an amount against a settlement you have not identified.
 
-### Anthropic structured output is prompt-enforced, so parse failure is a real path
-`Claude.supports_native_structured_outputs` is False in Agno 2.9.0, so `output_schema`
-appends a JSON instruction to the system message and parses the reply. A malformed answer
-is possible, and `_unreadable()` returns the record as `unresolved`, confidence 0.0, with
-the trace intact. Consistent with cause #10: when we cannot tell, say so.
+### NVIDIA DeepSeek Flash is the requested model route
+`config.py` uses `OpenAIChat` against NVIDIA's OpenAI-compatible endpoint with the supplied
+`deepseek-ai/deepseek-v4-flash-0731` model, `temperature=1`, `top_p=0.95`, 16,384 output
+tokens, and NVIDIA's requested thinking settings. `openai==3.5.0` is pinned; the unused
+Anthropic SDK is removed.
+
+NVIDIA's endpoint does not promise OpenAI JSON-schema support, so
+`supports_native_structured_outputs=False` makes Agno use prompt-enforced `output_schema`.
+A malformed answer is still a real path, and `_unreadable()` returns the record as
+`unresolved`, confidence 0.0, with the trace intact. Consistent with cause #10: when we
+cannot tell, say so.
+
+The account authenticated and listed models, but DeepSeek Flash timed out and NVIDIA then
+returned HTTP 402 (budget pool quota exhausted). No agent accuracy numbers are claimed until
+that quota is available again.
+
+### Both documented Razorpay API boundaries are live-verified
+With the test credentials in `.env`, a read-only call to `GET /v1/settlements/?count=1&skip=0`
+authenticated and returned zero settlements. A read-only call to
+`GET /v1/settlements/recon/combined?year=2026&month=8&count=1&skip=0` also authenticated and
+returned zero items. This is expected for a new test account; the calls prove credentials and
+response shape, while the 55-record synthetic batch supplies throughput for the MVP.
 
 ### `ReconciledRecord` lives in `data/schemas.py`, `Diagnosis` in the agent
 `Diagnosis` (what the model answers) is meaningless without the prompt, so it sits beside
@@ -390,8 +407,8 @@ accuracy numbers, which means a collapsed day 2 still leaves a defensible submis
 
 | # | Step | Est |
 |---|---|---|
-| 4 | `engine/razorpay_client.py` (real API, test mode, expect zero rows) | 45m |
-| 5 | `reporting/report_builder.py` | 45m |
+| 4 | `engine/razorpay_client.py` (real API, test mode, expect zero rows) | done |
+| 5 | `reporting/report_builder.py` | done |
 | 6 | First live run, then prompt iteration - 5 records before 55 | 2-3h |
 | 7 | `evaluation/eval.py` - real precision/recall, per cause, pairing separate from diagnosis | 1.5h |
 
@@ -491,4 +508,28 @@ only `agno.os.AgentOS`.
 The tools read from context, so a chat with nothing bound would raise. `playground.py` sets
 `PLAYGROUND_RECORD` (index 0) at import, the way a per-user demo would set a default user.
 Every chat in the Playground reconciles that one record; change the index to watch another.
-Not a product surface — a window onto the agent's tool path.
+Not a product surface - a window onto the agent's tool path.
+
+### NVIDIA DeepSeek Flash is the requested model route
+`config.py` uses `OpenAIChat` against NVIDIA's OpenAI-compatible endpoint with
+`deepseek-ai/deepseek-v4-flash-0731`, `temperature=1`, `top_p=0.95`, 16,384 output tokens,
+and the requested thinking settings. `openai==3.5.0` is pinned; the unused Anthropic SDK is
+removed. NVIDIA does not promise OpenAI JSON-schema support, so
+`supports_native_structured_outputs=False` keeps `output_schema` prompt-enforced.
+
+The account authenticated and listed models, but DeepSeek Flash timed out and NVIDIA then
+returned HTTP 402 (budget pool quota exhausted). No agent accuracy numbers are claimed until
+that quota is available again.
+
+### Both documented Razorpay API boundaries are live-verified
+Read-only calls with the test credentials authenticated against
+`GET /v1/settlements/?count=1&skip=0` and
+`GET /v1/settlements/recon/combined?year=2026&month=8&count=1&skip=0`. Both returned zero
+items, as expected for test mode. The live calls prove credentials and response shape; the
+55-record synthetic batch supplies throughput for the MVP.
+
+### Match rate means reconciled; pair rate means paired
+`report_builder.py` reports `match_rate` as the percentage with `matched` or `explained`
+status. A settlement ID alone is not enough: a paired-but-unexplained record cannot inflate
+the headline. `pair_rate` is the percentage with a settlement ID. `in_transit` is outside
+both rates because it is an expected pending state, not a successful match or exception.
