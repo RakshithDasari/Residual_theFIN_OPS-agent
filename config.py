@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
 from agno.models.openai import OpenAIChat
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -12,16 +12,15 @@ DATA_DIR = BASE_DIR / "data"
 BATCH_FILE = DATA_DIR / "synthetic_batch.json"
 GROUND_TRUTH_FILE = DATA_DIR / "ground_truth.json"
 
-MODEL_ID = "deepseek-ai/deepseek-v4-pro-0813"
+MODEL_ID = "moonshotai/kimi-k3"
 
 model = OpenAIChat(
     id=MODEL_ID,
-    base_url="https://integrate.api.nvidia.com/v1",
-    api_key=os.getenv("NVIDIA_API_KEY"),
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENROUTER_API_KEY") or os.getenv("KIOSAPI_API_KEY") or os.getenv("OPENAI_API_KEY"),
     temperature=0,
     top_p=0.95,
-    max_tokens=16384,
+    max_tokens=2000,
     seed=42,
-    extra_body={"chat_template_kwargs": {"thinking": False}},
     supports_native_structured_outputs=False,
 )
