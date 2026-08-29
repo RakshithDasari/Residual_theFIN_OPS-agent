@@ -8,6 +8,10 @@ from evaluation.eval import evaluate, load_batch, load_truth
 from reporting.report_builder import build_report
 
 
+class RecordNotFoundError(ValueError):
+    """Raised when the requested record ID cannot be found in the synthetic batch."""
+
+
 def provider_ready() -> bool:
     """Check if a live model provider is configured at all."""
     return bool(
@@ -40,6 +44,16 @@ def batch_preview(limit: int | None = None) -> dict[str, Any]:
 
 async def reconcile_single_service(record_id: str | None = None, limit: int | None = None) -> dict[str, Any]:
     """Reconcile a single record from the synthetic batch if a live model is configured."""
+    expected, settlements = load_batch(limit)
+    target = next((record for record in expected if record.record_id == record_id), None)
+    if target is None:
+        return {
+            "mode": "live",
+            "status": "not_found",
+            "message": f"Record '{record_id}' was not found in the current batch.",
+            "preview": batch_preview(limit),
+        }
+
     if not provider_ready():
         return {
             "mode": "degraded",
@@ -48,14 +62,15 @@ async def reconcile_single_service(record_id: str | None = None, limit: int | No
             "preview": batch_preview(limit),
         }
 
-    expected, settlements = load_batch(limit)
-    target = next((record for record in expected if record.record_id == record_id), expected[0])
     result = await reconcile_record(target, settlements, BATCH_DATE)
     return {"mode": "live", "status": "ok", "record": result.model_dump(mode="json")}
 
 
 async def reconcile_batch_service(limit: int | None = None) -> dict[str, Any]:
     """Run the batch reconciliation if a live provider is configured, otherwise return degraded status."""
+    if limit is not None and limit <= 0:
+        raise ValueError("limit must be greater than 0")
+
     if not provider_ready():
         return {
             "mode": "degraded",

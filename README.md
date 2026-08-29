@@ -1,66 +1,91 @@
 # Settlement Reconciliation Agent
 
-Razorpay AI Buildathon 2026 — Track 04, AI Finance Controller.
+This project reconciles a merchant's expected order records against Razorpay-style settlement records and explains the discrepancy in plain language, with a confidence score and a reasoning trace.
 
-Reconciles a merchant's own expected order records against actual Razorpay
-settlements, and explains every discrepancy it finds in plain language with a
-confidence score.
+The project is intentionally read-only and batch-shaped. It does not write back to any system, and it does not maintain auth or user state.
 
-Existing recon tooling tells a merchant *that* something didn't reconcile.
-This tells them *why*.
+## Current architecture
 
-## Scope
+- Backend: FastAPI service in [backend/main.py](backend/main.py)
+- Agent orchestration: Agno in [agent/reasoning_agent.py](agent/reasoning_agent.py)
+- Deterministic reconciliation logic: [engine/matcher.py](engine/matcher.py)
+- Data model and taxonomy: [data/schemas.py](data/schemas.py), [agent/taxonomy.py](agent/taxonomy.py)
+- Frontend: React + Vite in [frontend](frontend)
 
-An MVP that closes one finance-ops loop properly, with measured accuracy — not a
-platform. It deliberately has no auth, no database, no write-back to any system, and
-no retrieval layer. Reconciliation is read-only and batch-shaped, and building it that
-way was a design decision rather than a shortcut.
+The live model currently uses the OpenRouter-compatible provider with the Moonshot Kimi model configured in [config.py](config.py). The default model is `moonshotai/kimi-k3` via the OpenRouter base URL.
 
-The *actual* side is the real Razorpay Settlements API in test mode. The *expected*
-side is synthetic, and is described that way everywhere — even in production it would
-come from the merchant's own order system, not from Razorpay.
+## What is synthetic
 
-Accuracy figures are whatever the eval script computes, reported per cause, including
-the causes the agent handles badly. See [NOTES.md](NOTES.md) for every locked decision
-and its reasoning.
+The expected records and settlement batch are synthetic for local validation. The project is designed to reconcile a merchant's own expected-side data against settlement data, but the batch used in this repo is a reproducible synthetic dataset for offline testing and demo work.
 
-The agent uses DeepSeek V4 Pro through NVIDIA's OpenAI-compatible API.
+## Environment setup
 
-## Live API boundary
-
-The Razorpay test credentials successfully authenticated against both `GET /v1/settlements/`
-and `GET /v1/settlements/recon/combined`; each returned zero records. Test-mode settlement
-history is therefore not used to inflate the batch - the 55-record workload remains synthetic.
-
-## Status
-
-In development. Agent and tool layers are verified offline across all 55 records. Set
-`NVIDIA_API_KEY` before a live agent run.
-
-## Setup
+1. Create a Python environment.
+2. Install backend dependencies:
 
 ```bash
 pip install -r requirements.txt
-# Create a local .env file with your API keys.
 ```
 
-Every module self-checks. Run them from the project root:
+3. Install frontend dependencies:
 
 ```bash
-python -m data.schemas && python -m data.generator && python -m engine.matcher && python -m agent.taxonomy && python -m context && python -m agent.tools && python -m agent.reasoning_agent
+cd frontend
+npm install
 ```
 
-All of those run offline — no API key, no LLM calls.
-
-## Watching the agent work
-
-`playground.py` serves the agent through Agno's `AgentOS`, which shows each tool call as
-it happens. Useful for seeing that the agent picks its own path rather than following a
-script.
+4. Create a local `.env` from the template:
 
 ```bash
-python playground.py
+cp .env.example .env
 ```
 
-It binds one record at startup (`PLAYGROUND_RECORD` in `playground.py`); change the index
-to reconcile a different one. Needs `NVIDIA_API_KEY`.
+5. Fill in the keys you are actually using. At minimum, set the provider key that matches your current configuration:
+
+```env
+OPENROUTER_API_KEY=your_key_here
+FRONTEND_ORIGIN=http://localhost:4173
+```
+
+You may also keep other provider keys in the file if you are switching providers locally, but the backend will only use whichever key is selected by the current config.
+
+## Run locally
+
+Backend:
+
+```bash
+python -m backend.main
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm run dev -- --host 0.0.0.0 --port 4173
+```
+
+Then open:
+- Backend: http://localhost:8000/docs
+- Frontend: http://localhost:4173/
+
+## Self-checks
+
+Run these from the project root:
+
+```bash
+python -m data.schemas
+python -m data.generator
+python -m engine.matcher
+python -m agent.taxonomy
+python -m context
+python -m agent.tools
+python -m agent.reasoning_agent
+```
+
+These run offline and do not require a live provider call.
+
+## Notes
+
+- The project is intentionally not a production payment workflow; it is a reconciliation demo and audit tool.
+- Accuracy is computed by the evaluation script in [evaluation/eval.py](evaluation/eval.py), not by cherry-picked numbers.
+- Live provider access can fail because of billing, quota, or provider-side policy. The backend and UI are designed to surface those failures honestly rather than masking them with fake success data.
