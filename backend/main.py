@@ -1,5 +1,5 @@
+import asyncio
 import os
-from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -46,14 +46,7 @@ def ensure_positive_limit(limit: int | None, field_name: str = "limit") -> None:
         raise HTTPException(status_code=400, detail=f"{field_name} must be greater than 0")
 
 
-batch_lock: Any = None
-
-try:
-    import asyncio
-
-    batch_lock = asyncio.Lock()
-except Exception:
-    batch_lock = None
+batch_lock = asyncio.Lock()
 
 
 @app.get("/health")
@@ -63,10 +56,13 @@ def health() -> dict:
 
 @app.get("/status")
 def status() -> dict:
+    hf_token = os.getenv("HF_TOKEN")
     return {
         "backend": "ready",
-        "model": "provider-plugged",
-        "note": "Live provider selection remains separate from backend logic.",
+        "provider": "huggingface",
+        "model": os.getenv("HF_MODEL_ID", "zai-org/GLM-5.3-Flash:novita"),
+        "configured": bool(hf_token),
+        "provider_ready": bool(hf_token),
     }
 
 

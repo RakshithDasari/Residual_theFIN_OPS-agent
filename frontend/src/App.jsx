@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
 import './App.css'
 
-const API_BASE = 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
 const emptySummary = {
   total_records: 0,
@@ -27,8 +27,6 @@ const navItems = [
   { to: '/', label: 'Overview' },
   { to: '/review', label: 'Review queue' },
   { to: '/exceptions', label: 'Exceptions' },
-  { to: '/analytics', label: 'Analytics' },
-  { to: '/support', label: 'Support' },
 ]
 
 function formatCurrency(value) {
@@ -225,12 +223,8 @@ function DashboardShell() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand-block">
-          <div className="brand-mark">R</div>
-          <div>
-            <p className="eyebrow">Operations</p>
-            <h1>Reconciliation</h1>
-          </div>
+        <div className="brand-block brand-inline">
+          <h1 className="brand-wordmark">Residual</h1>
         </div>
 
         <nav className="nav" aria-label="Main navigation">
@@ -268,7 +262,7 @@ function DashboardShell() {
         <header className="topbar">
           <div>
             <p className="eyebrow">Settlement operations</p>
-            <h2>Batch overview</h2>
+            <h2>Residual overview</h2>
           </div>
 
           <div className="toolbar">
@@ -320,23 +314,6 @@ function DashboardShell() {
           <Route
             path="/exceptions"
             element={<ExceptionsPage summary={summary} exceptionList={exceptionList} />}
-          />
-          <Route
-            path="/analytics"
-            element={<AnalyticsPage summary={summary} />}
-          />
-          <Route
-            path="/support"
-            element={
-              <SupportPage
-                queryInput={queryInput}
-                setQueryInput={setQueryInput}
-                runQuery={runQuery}
-                loading={loading}
-                errorText={errorText}
-                statusText={statusText}
-              />
-            }
           />
         </Routes>
 
@@ -399,15 +376,23 @@ function DashboardShell() {
             <div className="trace-block">
               <h4>Trace</h4>
               <ul>
-                {(selectedRecord.trace ?? []).map((step) => (
-                  <li key={`${selectedRecord.record_id}-${step.step}`}>
-                    <div className="trace-topline">
-                      <strong>{step.step}</strong>
-                      <span>{step.result}</span>
-                    </div>
-                    <p>{step.detail}</p>
-                  </li>
-                ))}
+                {(selectedRecord.trace ?? []).map((step) => {
+                  const traceState = String(step.result ?? '').toLowerCase()
+                  const resolved = !/(fail|error|miss|unresolved|exception)/.test(traceState)
+
+                  return (
+                    <li key={`${selectedRecord.record_id}-${step.step}`} className={resolved ? 'trace-item resolved' : 'trace-item failed'}>
+                      <div className="trace-topline">
+                        <strong>{step.step}</strong>
+                        <span className={`trace-state ${resolved ? 'resolved' : 'failed'}`}>
+                          {resolved ? '✓ Resolved' : '✕ Failed'}
+                        </span>
+                      </div>
+                      <p>{step.detail}</p>
+                      <pre className="trace-evidence">{step.result}</pre>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           </div>
@@ -418,6 +403,16 @@ function DashboardShell() {
 }
 
 function OverviewPage({ summary, records, selectedRecord, openDetail, loading, errorText, queryInput, setQueryInput, runQuery }) {
+  const totalExpected = records.reduce((sum, record) => sum + (Number(record.expected_amount_paise) || 0), 0)
+  const totalActual = records.reduce((sum, record) => sum + (Number(record.actual_amount_paise ?? 0) || 0), 0)
+  const totalResidual = totalActual - totalExpected
+
+  const ledgerGroups = [
+    { key: 'matched', title: 'Matched', items: records.filter((record) => record.status === 'matched') },
+    { key: 'explained', title: 'Explained', items: records.filter((record) => record.status === 'explained') },
+    { key: 'unresolved', title: 'Unresolved', items: records.filter((record) => record.status === 'unresolved') },
+  ]
+
   return (
     <>
       <div className="query-bar">
@@ -435,94 +430,65 @@ function OverviewPage({ summary, records, selectedRecord, openDetail, loading, e
 
       {errorText ? <div className="banner error">{errorText}</div> : null}
 
-      <section className="summary-grid">
-        <article className="metric-card highlight">
-          <span className="label">Records</span>
-          <strong>{summary.total_records}</strong>
-          <small>Total in batch</small>
-        </article>
-        <article className="metric-card">
-          <span className="label">Matched</span>
-          <strong>{summary.matched_records}</strong>
-          <small>{formatPercent((summary.matched_records / Math.max(summary.total_records, 1)) * 100)}</small>
-        </article>
-        <article className="metric-card">
-          <span className="label">Explained</span>
-          <strong>{summary.explained_records}</strong>
-          <small>{formatPercent((summary.explained_records / Math.max(summary.total_records, 1)) * 100)}</small>
-        </article>
-        <article className="metric-card">
-          <span className="label">In transit</span>
-          <strong>{summary.in_transit_records}</strong>
-          <small>{summary.in_transit_records ? 'Awaiting settlement' : 'No direct action'}</small>
-        </article>
-        <article className="metric-card">
-          <span className="label">Unresolved</span>
-          <strong>{summary.unresolved_records}</strong>
-          <small>{summary.unresolved_records ? 'Needs analyst review' : 'Healthy'}</small>
-        </article>
-        <article className="metric-card">
-          <span className="label">Match rate</span>
-          <strong>{formatPercent(summary.match_rate)}</strong>
-          <small>Auto-match score</small>
-        </article>
+      <section className="ledger-balance">
+        <div className="ledger-balance-header">
+          <span className="eyebrow">Balance</span>
+          <h3>Residual ledger</h3>
+        </div>
+
+        <div className="ledger-balance-line">
+          <div className="ledger-balance-item">
+            <span>Expected</span>
+            <strong>{formatCurrency(totalExpected)}</strong>
+          </div>
+          <div className="ledger-balance-item">
+            <span>Actual</span>
+            <strong>{formatCurrency(totalActual)}</strong>
+          </div>
+          <div className="ledger-balance-item residual">
+            <span>Residual</span>
+            <strong>{formatCurrency(totalResidual)}</strong>
+          </div>
+        </div>
       </section>
 
-      <section className="content-grid">
-        <div className="panel">
-          <div className="panel-header">
-            <h3>Reconciliation queue</h3>
-            <span>{records.length} records</span>
-          </div>
+      <section className="ledger-sections">
+        {ledgerGroups.map((group) => (
+          <div key={group.key} className="ledger-section panel">
+            <div className="panel-header">
+              <h3>{group.title}</h3>
+              <span>{group.items.length} records</span>
+            </div>
 
-          <div className="record-list">
-            {records.length ? (
-              records.map((record) => (
-                <button
-                  type="button"
-                  key={record.record_id}
-                  className={`record-row ${selectedRecord?.record_id === record.record_id ? 'active' : ''}`}
-                  onClick={() => openDetail(record.record_id)}
-                >
-                  <div className="record-meta">
-                    <strong>{record.record_id}</strong>
-                    <span>{record.business_type}</span>
-                  </div>
-                  <div className="record-values">
-                    <span>{formatCurrency(record.expected_amount_paise)}</span>
-                    <span className={`badge ${toneMap[record.status] ?? 'muted'}`}>
-                      {record.status}
-                    </span>
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="empty-state">
-                {loading ? 'Loading live reconciliation data…' : 'No records returned yet.'}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="panel analytics-panel">
-          <div className="panel-header">
-            <h3>Exception categories</h3>
-            <span>{Object.keys(summary.exception_categories ?? {}).length} groups</span>
-          </div>
-
-          <div className="exception-list">
-            {Object.entries(summary.exception_categories ?? {}).length ? (
-              Object.entries(summary.exception_categories ?? {}).map(([key, count]) => (
-                <div key={key} className="exception-item">
-                  <span>{key}</span>
-                  <strong>{count}</strong>
+            <div className="record-list ledger-list">
+              {group.items.length ? (
+                group.items.map((record) => (
+                  <button
+                    type="button"
+                    key={record.record_id}
+                    className={`record-row ${selectedRecord?.record_id === record.record_id ? 'active' : ''}`}
+                    onClick={() => openDetail(record.record_id)}
+                  >
+                    <div className="record-meta">
+                      <strong className="record-id-mono">{record.record_id}</strong>
+                      <span>{record.business_type}</span>
+                    </div>
+                    <div className="record-values">
+                      <span>{formatCurrency(record.expected_amount_paise)}</span>
+                      <span className={`badge ${toneMap[record.status] ?? 'muted'}`}>
+                        {record.status}
+                      </span>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="empty-state">
+                  {loading ? 'Loading live reconciliation data…' : `Run a batch to see ${group.title.toLowerCase()} records here.`}
                 </div>
-              ))
-            ) : (
-              <div className="empty-state">No exceptions reported.</div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        ))}
       </section>
     </>
   )
@@ -599,70 +565,6 @@ function ExceptionsPage({ summary, exceptionList }) {
           <span>Unresolved</span>
           <strong>{summary.unresolved_records}</strong>
         </div>
-      </div>
-    </section>
-  )
-}
-
-function AnalyticsPage({ summary }) {
-  return (
-    <section className="panel analytics-panel">
-      <div className="panel-header">
-        <h3>Analytics</h3>
-        <span>Reconciliation signal</span>
-      </div>
-
-      <div className="summary-grid">
-        <article className="metric-card">
-          <span className="label">Match rate</span>
-          <strong>{formatPercent(summary.match_rate)}</strong>
-          <small>Auto-match score</small>
-        </article>
-        <article className="metric-card">
-          <span className="label">Pair rate</span>
-          <strong>{formatPercent(summary.pair_rate)}</strong>
-          <small>Paired settlement share</small>
-        </article>
-        <article className="metric-card">
-          <span className="label">Needs attention</span>
-          <strong>{summary.needs_attention}</strong>
-          <small>Flagged records</small>
-        </article>
-      </div>
-    </section>
-  )
-}
-
-function SupportPage({ queryInput, setQueryInput, runQuery, loading, errorText, statusText }) {
-  return (
-    <section className="panel support-panel">
-      <div className="panel-header">
-        <h3>Support</h3>
-        <span>{statusText}</span>
-      </div>
-
-      <div className="query-bar support-query">
-        <input
-          type="text"
-          value={queryInput}
-          onChange={(event) => setQueryInput(event.target.value)}
-          placeholder="Ask another question"
-          aria-label="Ask another question"
-        />
-        <button type="button" className="primary" onClick={runQuery} disabled={loading}>
-          Ask agent
-        </button>
-      </div>
-
-      {errorText ? <div className="banner error">{errorText}</div> : null}
-
-      <div className="support-box">
-        <h4>Current provider status</h4>
-        <p>
-          The frontend is connected to the FastAPI backend, but live model calls remain blocked by
-          the active provider’s billing or quota state. This is an honest runtime status, not a fake
-          success path.
-        </p>
       </div>
     </section>
   )

@@ -21,7 +21,9 @@ from data.schemas import DiscrepancyCause, ReconciledRecord, TraceStep
 
 # The longest honest path is three calls: exact, fuzzy, then arithmetic or the date check.
 MAX_TOOL_CALLS = 6
-CONCURRENCY = 8
+CONCURRENCY = 1
+RECORD_GAP_SECONDS = 0
+CAUSE_VALUES = {cause.value for cause in DiscrepancyCause}
 
 
 class Diagnosis(BaseModel):
@@ -78,8 +80,16 @@ reconciliation_agent = Agent(
         "sentences, give the amount in rupees, and say what they should do about it, including "
         "that they need do nothing when nothing is wrong.",
 
-        "After using the tools, return exactly one JSON object with the fields primary_cause, "
-        "contributing_causes, explanation, and confidence. Do not wrap it in markdown.",
+        dedent("""\
+            When you are done with the tools, write your answer as four labelled lines and
+            nothing else:
+
+            primary_cause: one value from the taxonomy
+            contributing_causes: comma-separated taxonomy values, or none
+            explanation: two or three sentences
+            confidence: a number between 0 and 1
+
+            There is no tool for reporting the answer. Write the lines in your reply."""),
 
         "Prefer unresolved to a cause that nearly fits. A confident wrong explanation costs the "
         "merchant more than an honest gap does.",
@@ -115,11 +125,32 @@ def build_trace(run) -> list[TraceStep]:
 
 
 def parse_diagnosis(content) -> Diagnosis | None:
-    """Parse and validate the model's final diagnosis without provider schema enforcement."""
+    """Read the four labelled lines the agent answers with, or a JSON object if it sent one."""
     if isinstance(content, Diagnosis):
         return content
     if not isinstance(content, str):
         return None
+
+    fields = dict(re.findall(r"^\s*\**\s*(\w+)\s*\**\s*:\s*\**\s*(.+?)\s*\**\s*$", content, re.MULTILINE))
+    cause = (fields.get("primary_cause") or "").strip().strip("`\"'").lower()
+    if cause in CAUSE_VALUES:
+        contributing = [
+            value
+            for value in re.split(r"[,\s]+", fields.get("contributing_causes", "").lower())
+            if value in CAUSE_VALUES
+        ]
+        try:
+            confidence = min(1.0, max(0.0, float(re.sub(r"[^\d.]", "", fields.get("confidence", "")))))
+        except ValueError:
+            confidence = 0.6
+        explanation = fields.get("explanation", "").strip()
+        if explanation:
+            return Diagnosis(
+                primary_cause=cause,
+                contributing_causes=contributing,
+                explanation=explanation,
+                confidence=confidence,
+            )
 
     candidates = [content.strip()]
     candidates.extend(re.findall(r"```(?:json)?\s*(\{.*?\})\s*```", content, re.DOTALL))
@@ -174,13 +205,15 @@ async def reconcile_record(expected, settlements, as_of) -> ReconciledRecord:
 
 
 async def reconcile_batch(expected_records, settlements, as_of, concurrency=CONCURRENCY):
-    limit = asyncio.Semaphore(concurrency)
+    if concurrency != 1:
+        raise ValueError("This agent must run at concurrency=1 to keep records isolated.")
 
-    async def one(expected):
-        async with limit:
-            return await reconcile_record(expected, settlements, as_of)
-
-    return await asyncio.gather(*(one(record) for record in expected_records))
+    results = []
+    for index, record in enumerate(expected_records):
+        if index > 0:
+            await asyncio.sleep(RECORD_GAP_SECONDS)
+        results.append(await reconcile_record(record, settlements, as_of))
+    return results
 
 
 if __name__ == "__main__":
@@ -236,6 +269,28 @@ if __name__ == "__main__":
     fenced = "```json\n" + diagnosis.model_dump_json() + "\n```"
     assert parse_diagnosis(fenced).primary_cause is DiscrepancyCause.TDS
     assert parse_diagnosis("not a diagnosis") is None
+
+    labelled = parse_diagnosis(dedent("""\
+        primary_cause: tds
+        contributing_causes: mdr_fee, gst_on_fee
+        explanation: Rs 83.60 was withheld as TDS under section 194-O.
+        confidence: 0.95"""))
+    assert labelled.primary_cause is DiscrepancyCause.TDS
+    assert labelled.contributing_causes == [DiscrepancyCause.MDR_FEE, DiscrepancyCause.GST_ON_FEE]
+    assert labelled.confidence == 0.95
+
+    # What the model actually sends when it decorates the lines or pads them with prose.
+    messy = parse_diagnosis(dedent("""\
+        Here is my finding.
+
+        **primary_cause:** in_transit
+        **contributing_causes:** none
+        **explanation:** The order is two days old and inside the T+2 window.
+        **confidence:** 0.9 (high)"""))
+    assert messy.primary_cause is DiscrepancyCause.IN_TRANSIT
+    assert messy.contributing_causes == []
+    assert messy.confidence == 0.9
+    assert parse_diagnosis("primary_cause: not_a_real_cause\nexplanation: x\nconfidence: 1") is None
 
     unreadable = _unreadable(expected_records[0], [])
     assert unreadable.status is RecordStatus.UNRESOLVED and unreadable.confidence == 0.0

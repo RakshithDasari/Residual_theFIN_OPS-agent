@@ -1,6 +1,6 @@
-# Settlement Reconciliation Agent
+# Residual
 
-This project reconciles a merchant's expected order records against Razorpay-style settlement records and explains the discrepancy in plain language, with a confidence score and a reasoning trace.
+Residual is a merchant finance ledger for reconciliation: it compares expected order records against settlement activity and explains the discrepancy in plain language, with a confidence score and a reasoning trace.
 
 The project is intentionally read-only and batch-shaped. It does not write back to any system, and it does not maintain auth or user state.
 
@@ -12,7 +12,7 @@ The project is intentionally read-only and batch-shaped. It does not write back 
 - Data model and taxonomy: [data/schemas.py](data/schemas.py), [agent/taxonomy.py](agent/taxonomy.py)
 - Frontend: React + Vite in [frontend](frontend)
 
-The live model currently uses the OpenRouter-compatible provider with the Moonshot Kimi model configured in [config.py](config.py). The default model is `moonshotai/kimi-k3` via the OpenRouter base URL.
+The live model currently uses Hugging Face's OpenAI-compatible router with the `zai-org/GLM-5.3-Flash:novita` model configured in [config.py](config.py).
 
 ## What is synthetic
 
@@ -40,14 +40,14 @@ npm install
 cp .env.example .env
 ```
 
-5. Fill in the keys you are actually using. At minimum, set the provider key that matches your current configuration:
+5. Set a valid Hugging Face token and the frontend origin:
 
 ```env
-OPENROUTER_API_KEY=your_key_here
+HF_TOKEN=your_hugging_face_token_here
+HF_BASE_URL=https://router.huggingface.co/v1
+HF_MODEL_ID=zai-org/GLM-5.3-Flash:novita
 FRONTEND_ORIGIN=http://localhost:4173
 ```
-
-You may also keep other provider keys in the file if you are switching providers locally, but the backend will only use whichever key is selected by the current config.
 
 ## Run locally
 

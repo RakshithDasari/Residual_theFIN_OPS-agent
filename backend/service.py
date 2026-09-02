@@ -8,19 +8,9 @@ from evaluation.eval import evaluate, load_batch, load_truth
 from reporting.report_builder import build_report
 
 
-class RecordNotFoundError(ValueError):
-    """Raised when the requested record ID cannot be found in the synthetic batch."""
-
-
 def provider_ready() -> bool:
-    """Check if a live model provider is configured at all."""
-    return bool(
-        os.getenv("OPENROUTER_API_KEY")
-        or os.getenv("KIOSAPI_API_KEY")
-        or os.getenv("OPENAI_API_KEY")
-        or os.getenv("GEMINI_API_KEY")
-        or os.getenv("NVIDIA_API_KEY")
-    ) and model is not None
+    """Check whether the active Hugging Face provider is configured."""
+    return bool(os.getenv("HF_TOKEN")) and model is not None
 
 
 def batch_preview(limit: int | None = None) -> dict[str, Any]:
@@ -67,7 +57,7 @@ async def reconcile_single_service(record_id: str | None = None, limit: int | No
 
 
 async def reconcile_batch_service(limit: int | None = None) -> dict[str, Any]:
-    """Run the batch reconciliation if a live provider is configured, otherwise return degraded status."""
+    """Run the batch reconciliation if the active provider is configured."""
     if limit is not None and limit <= 0:
         raise ValueError("limit must be greater than 0")
 
@@ -75,16 +65,27 @@ async def reconcile_batch_service(limit: int | None = None) -> dict[str, Any]:
         return {
             "mode": "degraded",
             "status": "provider_unconfigured",
-            "message": "Backend is ready; model provider configuration is pending.",
+            "message": "Backend is ready; the Hugging Face token is not configured.",
             "preview": batch_preview(limit),
         }
 
-    expected, settlements = load_batch(limit)
-    records = await reconcile_batch(expected, settlements, BATCH_DATE)
-    truth = load_truth(limit)
-    return {
-        "mode": "live",
-        "status": "ok",
-        "metrics": evaluate(records, truth),
-        "report": build_report(records),
-    }
+    try:
+        expected, settlements = load_batch(limit)
+        records = await reconcile_batch(expected, settlements, BATCH_DATE)
+        truth = load_truth(limit)
+        metrics = evaluate(records, truth)
+        return {
+            "mode": "live",
+            "status": "ok",
+            "provider_failures": 0,
+            "metrics": metrics,
+            "report": build_report(records),
+        }
+    except Exception as exc:  # pragma: no cover - provider/runtime failure surfaces honestly
+        return {
+            "mode": "live",
+            "status": "provider_failed",
+            "provider_failures": 1,
+            "message": str(exc),
+            "preview": batch_preview(limit),
+        }
