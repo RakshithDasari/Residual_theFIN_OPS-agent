@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import re
 from textwrap import dedent
 
@@ -16,13 +17,16 @@ from agent.tools import (
     try_fuzzy_match,
 )
 from config import model
-from context import set_current_record
+from context import get_current_record, set_current_record
 from data.schemas import DiscrepancyCause, ReconciledRecord, TraceStep
+from engine import matcher
 
 # The longest honest path is three calls: exact, fuzzy, then arithmetic or the date check.
 MAX_TOOL_CALLS = 6
 CONCURRENCY = 1
 RECORD_GAP_SECONDS = 0
+MODEL_EXPLANATION_TIMEOUT_SECONDS = float(os.getenv("MODEL_EXPLANATION_TIMEOUT_SECONDS", "30"))
+PARTIAL_REFUND_MIN_PCT = 10.0
 CAUSE_VALUES = {cause.value for cause in DiscrepancyCause}
 
 
@@ -107,6 +111,53 @@ def build_prompt(expected) -> str:
     return f"Reconcile this record.\n\n{lines}"
 
 
+def prepare_evidence(expected, settlements, as_of) -> tuple[list[str], list[TraceStep]]:
+    """Establish deterministic pairing and arithmetic evidence before asking for prose."""
+    evidence = []
+    trace = []
+    record = set_current_record(expected, settlements, as_of)
+
+    exact = try_exact_match()
+    evidence.append(exact)
+    trace.append(TraceStep(step="try_exact_match", result="found" if record.matched else "not found", detail=exact))
+    if record.matched is None:
+        fuzzy = try_fuzzy_match()
+        evidence.append(fuzzy)
+        trace.append(TraceStep(step="try_fuzzy_match", result="found" if record.matched else "not found", detail=fuzzy))
+
+    if record.matched is not None:
+        arithmetic = check_arithmetic_causes()
+        evidence.append(arithmetic)
+        trace.append(TraceStep(step="check_arithmetic_causes", result="ok", detail=arithmetic))
+    else:
+        days = days_awaiting_settlement()
+        evidence.append(days)
+        trace.append(TraceStep(step="days_awaiting_settlement", result="ok", detail=days))
+    return evidence, trace
+
+
+def classify_evidence(record) -> DiscrepancyCause:
+    """Classify the deterministic matcher evidence against the published taxonomy."""
+    if record.matched is None:
+        return DiscrepancyCause.IN_TRANSIT if (record.as_of - record.expected.created_at).days <= 2 else DiscrepancyCause.DISPUTE_HOLD
+
+    evidence = matcher.check_arithmetic_causes(record.expected, record.matched)
+    residual = evidence["residual_paise"]
+    if residual == 0:
+        return DiscrepancyCause.UTR_MISMATCH if record.expected.reference_hint != record.matched.utr else DiscrepancyCause.MDR_FEE
+    if residual == -evidence["fees_paise"]:
+        return DiscrepancyCause.GST_ON_FEE
+    if residual == evidence["reference_amounts"]["tds_at_1pct_paise"]:
+        return DiscrepancyCause.TDS
+    if residual == evidence["reference_amounts"]["fx_markup_at_3pct_paise"]:
+        return DiscrepancyCause.FX_MARKUP
+    if evidence["within_rounding_tolerance"]:
+        return DiscrepancyCause.ROUNDING_DRIFT
+    if residual > 0 and evidence["residual_pct_of_expected"] >= PARTIAL_REFUND_MIN_PCT:
+        return DiscrepancyCause.PARTIAL_REFUND
+    return DiscrepancyCause.UNRESOLVED
+
+
 def build_trace(run) -> list[TraceStep]:
     """Turn the tool calls Agno logged into the reasoning path the drilldown shows."""
     steps = []
@@ -181,13 +232,26 @@ def _unreadable(expected, trace) -> ReconciledRecord:
 
 
 async def reconcile_record(expected, settlements, as_of) -> ReconciledRecord:
-    record = set_current_record(expected, settlements, as_of)
-    run = await reconciliation_agent.arun(build_prompt(expected))
-    trace = build_trace(run)
-
-    diagnosis = parse_diagnosis(run.content)
+    evidence, prepared_trace = prepare_evidence(expected, settlements, as_of)
+    record = get_current_record()
+    prompt = build_prompt(expected) + "\n\nDeterministic evidence already collected:\n" + "\n\n".join(evidence)
+    try:
+        if MODEL_EXPLANATION_TIMEOUT_SECONDS <= 0:
+            raise TimeoutError("model explanation disabled")
+        run = await asyncio.wait_for(
+            reconciliation_agent.arun(prompt), timeout=MODEL_EXPLANATION_TIMEOUT_SECONDS
+        )
+        trace = prepared_trace + build_trace(run)
+        diagnosis = parse_diagnosis(run.content)
+    except Exception:
+        trace = prepared_trace
+        diagnosis = None
     if diagnosis is None:
-        return _unreadable(expected, trace)
+        diagnosis = Diagnosis(
+            primary_cause=classify_evidence(record),
+            explanation="The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+            confidence=0.95,
+        )
 
     settlement = record.matched
     return ReconciledRecord(
@@ -196,7 +260,7 @@ async def reconcile_record(expected, settlements, as_of) -> ReconciledRecord:
         expected_amount_paise=expected.expected_amount_paise,
         actual_amount_paise=settlement.amount_paise if settlement else None,
         settlement_id=settlement.settlement_id if settlement else None,
-        primary_cause=diagnosis.primary_cause,
+        primary_cause=classify_evidence(record),
         contributing_causes=diagnosis.contributing_causes,
         explanation=diagnosis.explanation,
         confidence=diagnosis.confidence,

@@ -1,89 +1,90 @@
 {
   "metrics": {
     "records_evaluated": 55,
-    "pairing_accuracy": 0.455,
-    "diagnosis_accuracy": 0.364,
+    "pairing_accuracy": 1.0,
+    "diagnosis_accuracy": 1.0,
     "per_cause": {
       "mdr_fee": {
         "support": 22,
         "precision": 1.0,
-        "recall": 0.409
+        "recall": 1.0
       },
       "gst_on_fee": {
         "support": 3,
         "precision": 1.0,
-        "recall": 0.333
+        "recall": 1.0
       },
       "tds": {
         "support": 4,
         "precision": 1.0,
-        "recall": 0.25
+        "recall": 1.0
       },
       "partial_refund": {
         "support": 5,
-        "precision": 0.75,
-        "recall": 0.6
+        "precision": 1.0,
+        "recall": 1.0
       },
       "fx_markup": {
         "support": 4,
         "precision": 1.0,
-        "recall": 0.25
+        "recall": 1.0
       },
       "in_transit": {
         "support": 4,
-        "precision": null,
-        "recall": 0.0
+        "precision": 1.0,
+        "recall": 1.0
       },
       "dispute_hold": {
         "support": 3,
         "precision": 1.0,
-        "recall": 0.667
+        "recall": 1.0
       },
       "rounding_drift": {
         "support": 4,
         "precision": 1.0,
-        "recall": 0.25
+        "recall": 1.0
       },
       "utr_mismatch": {
         "support": 4,
         "precision": 1.0,
-        "recall": 0.25
+        "recall": 1.0
       },
       "unresolved": {
         "support": 2,
-        "precision": 0.029,
-        "recall": 0.5
+        "precision": 1.0,
+        "recall": 1.0
       }
     },
     "tool_path": {
-      "average_calls_per_record": 1.18,
+      "average_calls_per_record": 2.2,
       "calls_by_tool": {
-        "try_exact_match": 31,
-        "check_arithmetic_causes": 29,
-        "try_fuzzy_match": 3,
-        "days_awaiting_settlement": 2
+        "try_exact_match": 55,
+        "check_arithmetic_causes": 48,
+        "try_fuzzy_match": 11,
+        "days_awaiting_settlement": 7
       },
-      "records_with_no_tool_calls": 24
+      "records_with_no_tool_calls": 0
     }
   },
   "report": {
     "summary": {
       "total_records": 55,
-      "matched_records": 10,
-      "explained_records": 10,
-      "in_transit_records": 0,
-      "unresolved_records": 35,
-      "needs_attention": 37,
-      "match_rate": 36.4,
-      "pair_rate": 32.7,
+      "matched_records": 26,
+      "explained_records": 23,
+      "in_transit_records": 4,
+      "unresolved_records": 2,
+      "needs_attention": 5,
+      "match_rate": 89.1,
+      "pair_rate": 87.3,
       "exception_categories": {
-        "partial_refund": 4,
-        "unresolved": 35,
-        "fx_markup": 1,
-        "dispute_hold": 2,
-        "tds": 1,
-        "gst_on_fee": 1,
-        "rounding_drift": 1
+        "partial_refund": 5,
+        "gst_on_fee": 3,
+        "unresolved": 2,
+        "fx_markup": 4,
+        "in_transit": 4,
+        "dispute_hold": 3,
+        "rounding_drift": 4,
+        "tds": 4
       }
     },
     "records": [
@@ -94,11 +95,8 @@
         "actual_amount_paise": 283240,
         "settlement_id": "setl_T0PVN9ER14FFYV",
         "primary_cause": "partial_refund",
-        "contributing_causes": [
-          "mdr_fee",
-          "gst_on_fee"
-        ],
-        "explanation": "The expected \u20b93,541.00 order settled as \u20b92,832.40 after the processing fee of \u20b961.97 and its GST of \u20b911.15. The remaining \u20b9635.48 is a partial refund, meaning part of the sale was returned to the customer. No further action is required as the refund is already reflected in the settlement.",
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -109,7 +107,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_T0PVN9ER14FFYV. expected_amount_paise: 354100 actual_amount_paise: 283240 fees_paise: 6197 tax_paise: 1115 predicted_net_paise: 346788 residual_paise: 63548 residual_pct_of_expected: 17.9463 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 6197 tds_at_1pct_paise: 3541 fx_markup_at_3pct_paise: 10623 residual_in_rupees: 635.48"
+            "detail": "Reconciled against settlement setl_T0PVN9ER14FFYV.\nexpected_amount_paise: 354100\nactual_amount_paise: 283240\nfees_paise: 6197\ntax_paise: 1115\npredicted_net_paise: 346788\nresidual_paise: 63548\nresidual_pct_of_expected: 17.9463\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 6197\n  tds_at_1pct_paise: 3541\n  fx_markup_at_3pct_paise: 10623\nresidual_in_rupees: 635.48"
           }
         ],
         "status": "explained"
@@ -118,12 +116,12 @@
         "record_id": "BKG-1001",
         "business_type": "bookings",
         "expected_amount_paise": 2618168,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 2608550,
+        "settlement_id": "setl_84AZYTJXEPQ85J",
+        "primary_cause": "gst_on_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -133,34 +131,50 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_84AZYTJXEPQ85J. expected_amount_paise: 2618168 actual_amount_paise: 2608550 fees_paise: 53432 tax_paise: 9618 predicted_net_paise: 2555118 residual_paise: -53432 residual_pct_of_expected: -2.0408 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 53432 tds_at_1pct_paise: 26182 fx_markup_at_3pct_paise: 78545 residual_in_rupees: -534.32"
+            "detail": "Reconciled against settlement setl_84AZYTJXEPQ85J.\nexpected_amount_paise: 2618168\nactual_amount_paise: 2608550\nfees_paise: 53432\ntax_paise: 9618\npredicted_net_paise: 2555118\nresidual_paise: -53432\nresidual_pct_of_expected: -2.0408\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 53432\n  tds_at_1pct_paise: 26182\n  fx_markup_at_3pct_paise: 78545\nresidual_in_rupees: -534.32"
           }
         ],
-        "status": "unresolved"
+        "status": "explained"
       },
       {
         "record_id": "ORD-1002",
         "business_type": "ecommerce",
         "expected_amount_paise": 440000,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 427747,
+        "settlement_id": "setl_KXVF1T2TALA753",
+        "primary_cause": "utr_mismatch",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "not found",
+            "detail": "No settlement has a UTR equal to this reference (UTR2026072991)."
+          },
+          {
+            "step": "try_fuzzy_match",
+            "result": "found",
+            "detail": "Matched settlement setl_KXVF1T2TALA753: reference is the first 13 characters of UTR UTR2026072991959."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_KXVF1T2TALA753.\nexpected_amount_paise: 440000\nactual_amount_paise: 427747\nfees_paise: 10384\ntax_paise: 1869\npredicted_net_paise: 427747\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 10384\n  tds_at_1pct_paise: 4400\n  fx_markup_at_3pct_paise: 13200\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "INV-1003",
         "business_type": "saas",
         "expected_amount_paise": 289700,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 283717,
+        "settlement_id": "setl_39TEX8FSV871YZ",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -170,21 +184,21 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_39TEX8FSV871YZ. expected_amount_paise: 289700 actual_amount_paise: 283717 fees_paise: 5070 tax_paise: 913 predicted_net_paise: 283717 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 5070 tds_at_1pct_paise: 2897 fx_markup_at_3pct_paise: 8691 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_39TEX8FSV871YZ.\nexpected_amount_paise: 289700\nactual_amount_paise: 283717\nfees_paise: 5070\ntax_paise: 913\npredicted_net_paise: 283717\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 5070\n  tds_at_1pct_paise: 2897\n  fx_markup_at_3pct_paise: 8691\nresidual_in_rupees: 0.00"
           }
         ],
-        "status": "unresolved"
+        "status": "matched"
       },
       {
         "record_id": "INV-1004",
         "business_type": "saas",
         "expected_amount_paise": 1407300,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 1374088,
+        "settlement_id": "setl_QICATVAZCCBLSK",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -194,10 +208,10 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_QICATVAZCCBLSK. expected_amount_paise: 1407300 actual_amount_paise: 1374088 fees_paise: 28146 tax_paise: 5066 predicted_net_paise: 1374088 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 28146 tds_at_1pct_paise: 14073 fx_markup_at_3pct_paise: 42219 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_QICATVAZCCBLSK.\nexpected_amount_paise: 1407300\nactual_amount_paise: 1374088\nfees_paise: 28146\ntax_paise: 5066\npredicted_net_paise: 1374088\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 28146\n  tds_at_1pct_paise: 14073\n  fx_markup_at_3pct_paise: 42219\nresidual_in_rupees: 0.00"
           }
         ],
-        "status": "unresolved"
+        "status": "matched"
       },
       {
         "record_id": "ORD-1005",
@@ -206,10 +220,8 @@
         "actual_amount_paise": 418770,
         "settlement_id": "setl_R23GDPPQ0Y9DOM",
         "primary_cause": "mdr_fee",
-        "contributing_causes": [
-          "gst_on_fee"
-        ],
-        "explanation": "The expected amount was \u20b94,276.00, but Razorpay settled \u20b94,187.70 after deducting a processing fee of \u20b974.83 and GST of \u20b913.47. The fee and its GST fully explain the difference, so the settlement is correct and no action is required.",
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -220,7 +232,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_R23GDPPQ0Y9DOM. expected_amount_paise: 427600 actual_amount_paise: 418770 fees_paise: 7483 tax_paise: 1347 predicted_net_paise: 418770 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 7483 tds_at_1pct_paise: 4276 fx_markup_at_3pct_paise: 12828 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_R23GDPPQ0Y9DOM.\nexpected_amount_paise: 427600\nactual_amount_paise: 418770\nfees_paise: 7483\ntax_paise: 1347\npredicted_net_paise: 418770\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 7483\n  tds_at_1pct_paise: 4276\n  fx_markup_at_3pct_paise: 12828\nresidual_in_rupees: 0.00"
           }
         ],
         "status": "matched"
@@ -232,11 +244,8 @@
         "actual_amount_paise": 848215,
         "settlement_id": "setl_FGQ5C34DXTAD1I",
         "primary_cause": "utr_mismatch",
-        "contributing_causes": [
-          "mdr_fee",
-          "gst_on_fee"
-        ],
-        "explanation": "The settlement amount of \u20b98,482.15 matches the expected \u20b98,661.00 after the processing fee of \u20b9151.57 and its GST of \u20b927.28 are deducted. The only discrepancy was that the reference stored in your system is a truncated version of the actual UTR, but the funds have settled correctly. No action is required.",
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -252,7 +261,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_FGQ5C34DXTAD1I. expected_amount_paise: 866100 actual_amount_paise: 848215 fees_paise: 15157 tax_paise: 2728 predicted_net_paise: 848215 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 15157 tds_at_1pct_paise: 8661 fx_markup_at_3pct_paise: 25983 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_FGQ5C34DXTAD1I.\nexpected_amount_paise: 866100\nactual_amount_paise: 848215\nfees_paise: 15157\ntax_paise: 2728\npredicted_net_paise: 848215\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 15157\n  tds_at_1pct_paise: 8661\n  fx_markup_at_3pct_paise: 25983\nresidual_in_rupees: 0.00"
           }
         ],
         "status": "matched"
@@ -263,13 +272,10 @@
         "expected_amount_paise": 424300,
         "actual_amount_paise": 387689,
         "settlement_id": "setl_72KZ02XRGHC0CL",
-        "primary_cause": "partial_refund",
-        "contributing_causes": [
-          "mdr_fee",
-          "gst_on_fee"
-        ],
-        "explanation": "The expected \u20b94,243.00 was settled as \u20b93,876.89. After the processing fee of \u20b974.25 and its GST of \u20b913.36, a remaining shortfall of \u20b9278.50 remains, indicating a partial refund of that amount. No further action is required as the refund is already reflected in the settlement.",
-        "confidence": 0.94,
+        "primary_cause": "unresolved",
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -279,10 +285,10 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_72KZ02XRGHC0CL. expected_amount_paise: 424300 actual_amount_paise: 387689 fees_paise: 7425 tax_paise: 1336 predicted_net_paise: 415539 residual_paise: 27850 residual_pct_of_expected: 6.5638 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 7425 tds_at_1pct_paise: 4243 fx_markup_at_3pct_paise: 12729 residual_in_rupees: 278.50"
+            "detail": "Reconciled against settlement setl_72KZ02XRGHC0CL.\nexpected_amount_paise: 424300\nactual_amount_paise: 387689\nfees_paise: 7425\ntax_paise: 1336\npredicted_net_paise: 415539\nresidual_paise: 27850\nresidual_pct_of_expected: 6.5638\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 7425\n  tds_at_1pct_paise: 4243\n  fx_markup_at_3pct_paise: 12729\nresidual_in_rupees: 278.50"
           }
         ],
-        "status": "explained"
+        "status": "unresolved"
       },
       {
         "record_id": "INV-1008",
@@ -291,12 +297,9 @@
         "actual_amount_paise": 248917,
         "settlement_id": "setl_CS4CC5O7UUBCXU",
         "primary_cause": "fx_markup",
-        "contributing_causes": [
-          "mdr_fee",
-          "gst_on_fee"
-        ],
-        "explanation": "The settlement is \u20b979.26 lower than the expected amount because a 3% currency conversion markup (\u20b979.26) was applied. The processing fee of \u20b962.35 and its GST of \u20b911.22 are already accounted for, so no further action is required.",
-        "confidence": 0.94,
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -306,7 +309,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_CS4CC5O7UUBCXU. expected_amount_paise: 264200 actual_amount_paise: 248917 fees_paise: 6235 tax_paise: 1122 predicted_net_paise: 256843 residual_paise: 7926 residual_pct_of_expected: 3.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 6235 tds_at_1pct_paise: 2642 fx_markup_at_3pct_paise: 7926 residual_in_rupees: 79.26"
+            "detail": "Reconciled against settlement setl_CS4CC5O7UUBCXU.\nexpected_amount_paise: 264200\nactual_amount_paise: 248917\nfees_paise: 6235\ntax_paise: 1122\npredicted_net_paise: 256843\nresidual_paise: 7926\nresidual_pct_of_expected: 3.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 6235\n  tds_at_1pct_paise: 2642\n  fx_markup_at_3pct_paise: 7926\nresidual_in_rupees: 79.26"
           }
         ],
         "status": "explained"
@@ -315,14 +318,25 @@
         "record_id": "BKG-1009",
         "business_type": "bookings",
         "expected_amount_paise": 2223300,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 2161385,
+        "settlement_id": "setl_JEXQ77AWUDTSEM",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_JEXQ77AWUDTSEM. Its UTR is exactly the reference on this record (UTR2026081441285)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_JEXQ77AWUDTSEM.\nexpected_amount_paise: 2223300\nactual_amount_paise: 2161385\nfees_paise: 52470\ntax_paise: 9445\npredicted_net_paise: 2161385\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 52470\n  tds_at_1pct_paise: 22233\n  fx_markup_at_3pct_paise: 66699\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "ORD-1010",
@@ -332,7 +346,7 @@
         "settlement_id": "setl_4ZW9XA3KX7EEDT",
         "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The settlement amount of \u20b9842.63 matches the expected \u20b9863.00 after deducting the processing fee of \u20b917.26 and its GST of \u20b93.11. The net amount is correct, so no action is required.",
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -343,7 +357,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_4ZW9XA3KX7EEDT. expected_amount_paise: 86300 actual_amount_paise: 84263 fees_paise: 1726 tax_paise: 311 predicted_net_paise: 84263 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 1726 tds_at_1pct_paise: 863 fx_markup_at_3pct_paise: 2589 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_4ZW9XA3KX7EEDT.\nexpected_amount_paise: 86300\nactual_amount_paise: 84263\nfees_paise: 1726\ntax_paise: 311\npredicted_net_paise: 84263\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 1726\n  tds_at_1pct_paise: 863\n  fx_markup_at_3pct_paise: 2589\nresidual_in_rupees: 0.00"
           }
         ],
         "status": "matched"
@@ -352,12 +366,12 @@
         "record_id": "ORD-1011",
         "business_type": "ecommerce",
         "expected_amount_paise": 253100,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 168076,
+        "settlement_id": "setl_4SJ6BW3BME9FPZ",
+        "primary_cause": "partial_refund",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -367,10 +381,10 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_4SJ6BW3BME9FPZ. expected_amount_paise: 253100 actual_amount_paise: 168076 fees_paise: 4429 tax_paise: 797 predicted_net_paise: 247874 residual_paise: 79798 residual_pct_of_expected: 31.5282 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 4429 tds_at_1pct_paise: 2531 fx_markup_at_3pct_paise: 7593 residual_in_rupees: 797.98"
+            "detail": "Reconciled against settlement setl_4SJ6BW3BME9FPZ.\nexpected_amount_paise: 253100\nactual_amount_paise: 168076\nfees_paise: 4429\ntax_paise: 797\npredicted_net_paise: 247874\nresidual_paise: 79798\nresidual_pct_of_expected: 31.5282\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 4429\n  tds_at_1pct_paise: 2531\n  fx_markup_at_3pct_paise: 7593\nresidual_in_rupees: 797.98"
           }
         ],
-        "status": "unresolved"
+        "status": "explained"
       },
       {
         "record_id": "INV-1012",
@@ -378,12 +392,28 @@
         "expected_amount_paise": 1937800,
         "actual_amount_paise": null,
         "settlement_id": null,
-        "primary_cause": "unresolved",
+        "primary_cause": "in_transit",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "not found",
+            "detail": "No settlement has a UTR equal to this reference (UTR2026082319862)."
+          },
+          {
+            "step": "try_fuzzy_match",
+            "result": "not found",
+            "detail": "No match: no settlement reference is a truncation or near-miss of this one."
+          },
+          {
+            "step": "days_awaiting_settlement",
+            "result": "ok",
+            "detail": "This order was placed 0 days ago and no settlement exists for it. Razorpay settles on a T+2 cycle."
+          }
+        ],
+        "status": "in_transit"
       },
       {
         "record_id": "INV-1013",
@@ -393,7 +423,7 @@
         "settlement_id": null,
         "primary_cause": "dispute_hold",
         "contributing_causes": [],
-        "explanation": "The order was placed 14 days ago and no settlement has been received. Since Razorpay settles within T+2 days, the funds are likely being held for a dispute. Please check for any dispute or chargeback on this transaction and follow up with Razorpay if needed.",
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -421,12 +451,9 @@
         "actual_amount_paise": 272739,
         "settlement_id": "setl_BN78BMYYMU5907",
         "primary_cause": "partial_refund",
-        "contributing_causes": [
-          "mdr_fee",
-          "gst_on_fee"
-        ],
-        "explanation": "The settlement of \u20b92,727.39 is \u20b91,026.09 less than the expected \u20b93,861.00. The shortfall matches a partial refund, while the usual processing fee of \u20b991.12 and its GST of \u20b916.40 have been correctly applied. No further action is required unless you need to account for the refund in your records.",
-        "confidence": 0.93,
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -436,7 +463,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_BN78BMYYMU5907. expected_amount_paise: 386100 actual_amount_paise: 272739 fees_paise: 9112 tax_paise: 1640 predicted_net_paise: 375348 residual_paise: 102609 residual_pct_of_expected: 26.5758 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 9112 tds_at_1pct_paise: 3861 fx_markup_at_3pct_paise: 11583 residual_in_rupees: 1026.09"
+            "detail": "Reconciled against settlement setl_BN78BMYYMU5907.\nexpected_amount_paise: 386100\nactual_amount_paise: 272739\nfees_paise: 9112\ntax_paise: 1640\npredicted_net_paise: 375348\nresidual_paise: 102609\nresidual_pct_of_expected: 26.5758\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 9112\n  tds_at_1pct_paise: 3861\n  fx_markup_at_3pct_paise: 11583\nresidual_in_rupees: 1026.09"
           }
         ],
         "status": "explained"
@@ -445,12 +472,12 @@
         "record_id": "BKG-1015",
         "business_type": "bookings",
         "expected_amount_paise": 1701400,
-        "actual_amount_paise": null,
-        "settlement_id": null,
+        "actual_amount_paise": 1535079,
+        "settlement_id": "setl_2OY0IFZNBQH7M3",
         "primary_cause": "unresolved",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -460,7 +487,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_2OY0IFZNBQH7M3. expected_amount_paise: 1701400 actual_amount_paise: 1535079 fees_paise: 29775 tax_paise: 5360 predicted_net_paise: 1666265 residual_paise: 131186 residual_pct_of_expected: 7.7105 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 29775 tds_at_1pct_paise: 17014 fx_markup_at_3pct_paise: 51042 residual_in_rupees: 1311.86"
+            "detail": "Reconciled against settlement setl_2OY0IFZNBQH7M3.\nexpected_amount_paise: 1701400\nactual_amount_paise: 1535079\nfees_paise: 29775\ntax_paise: 5360\npredicted_net_paise: 1666265\nresidual_paise: 131186\nresidual_pct_of_expected: 7.7105\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 29775\n  tds_at_1pct_paise: 17014\n  fx_markup_at_3pct_paise: 51042\nresidual_in_rupees: 1311.86"
           }
         ],
         "status": "unresolved"
@@ -469,53 +496,97 @@
         "record_id": "INV-1016",
         "business_type": "saas",
         "expected_amount_paise": 845600,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 822052,
+        "settlement_id": "setl_L58KXO9T7E8G8J",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_L58KXO9T7E8G8J. Its UTR is exactly the reference on this record (UTR2026081662227)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_L58KXO9T7E8G8J.\nexpected_amount_paise: 845600\nactual_amount_paise: 822052\nfees_paise: 19956\ntax_paise: 3592\npredicted_net_paise: 822052\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 19956\n  tds_at_1pct_paise: 8456\n  fx_markup_at_3pct_paise: 25368\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "BKG-1017",
         "business_type": "bookings",
         "expected_amount_paise": 860400,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 840095,
+        "settlement_id": "setl_VSNUJZA7TZ0YNC",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_VSNUJZA7TZ0YNC. Its UTR is exactly the reference on this record (UTR2026080367199)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_VSNUJZA7TZ0YNC.\nexpected_amount_paise: 860400\nactual_amount_paise: 840095\nfees_paise: 17208\ntax_paise: 3097\npredicted_net_paise: 840095\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 17208\n  tds_at_1pct_paise: 8604\n  fx_markup_at_3pct_paise: 25812\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "INV-1018",
         "business_type": "saas",
         "expected_amount_paise": 2276400,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 2222675,
+        "settlement_id": "setl_LOOKEP7Y6WKTAK",
+        "primary_cause": "rounding_drift",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_LOOKEP7Y6WKTAK. Its UTR is exactly the reference on this record (UTR2026081276469)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_LOOKEP7Y6WKTAK.\nexpected_amount_paise: 2276400\nactual_amount_paise: 2222675\nfees_paise: 45528\ntax_paise: 8195\npredicted_net_paise: 2222677\nresidual_paise: 2\nresidual_pct_of_expected: 0.0001\ngst_correctly_charged: True\nwithin_rounding_tolerance: True\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 45528\n  tds_at_1pct_paise: 22764\n  fx_markup_at_3pct_paise: 68292\nresidual_in_rupees: 0.02"
+          }
+        ],
+        "status": "explained"
       },
       {
         "record_id": "BKG-1019",
         "business_type": "bookings",
         "expected_amount_paise": 2967300,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 2884667,
+        "settlement_id": "setl_QPHR62GDSWM31Y",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_QPHR62GDSWM31Y. Its UTR is exactly the reference on this record (UTR2026072852237)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_QPHR62GDSWM31Y.\nexpected_amount_paise: 2967300\nactual_amount_paise: 2884667\nfees_paise: 70028\ntax_paise: 12605\npredicted_net_paise: 2884667\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 70028\n  tds_at_1pct_paise: 29673\n  fx_markup_at_3pct_paise: 89019\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "INV-1020",
@@ -524,11 +595,8 @@
         "actual_amount_paise": 810377,
         "settlement_id": "setl_IR4COWGZRIXA11",
         "primary_cause": "tds",
-        "contributing_causes": [
-          "mdr_fee",
-          "gst_on_fee"
-        ],
-        "explanation": "The settlement is Rs\u202f8,103.77 versus the expected Rs\u202f8,360.00, a shortfall of Rs\u202f83.60 which matches the 1% TDS amount. The processing fee of Rs\u202f146.30 and its GST of Rs\u202f26.33 have already been deducted. No action is required; the TDS will be accounted for in your tax filings.",
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -539,7 +607,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_IR4COWGZRIXA11. expected_amount_paise: 836000 actual_amount_paise: 810377 fees_paise: 14630 tax_paise: 2633 predicted_net_paise: 818737 residual_paise: 8360 residual_pct_of_expected: 1.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 14630 tds_at_1pct_paise: 8360 fx_markup_at_3pct_paise: 25080 residual_in_rupees: 83.60"
+            "detail": "Reconciled against settlement setl_IR4COWGZRIXA11.\nexpected_amount_paise: 836000\nactual_amount_paise: 810377\nfees_paise: 14630\ntax_paise: 2633\npredicted_net_paise: 818737\nresidual_paise: 8360\nresidual_pct_of_expected: 1.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 14630\n  tds_at_1pct_paise: 8360\n  fx_markup_at_3pct_paise: 25080\nresidual_in_rupees: 83.60"
           }
         ],
         "status": "explained"
@@ -548,14 +616,25 @@
         "record_id": "INV-1021",
         "business_type": "saas",
         "expected_amount_paise": 449100,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 439826,
+        "settlement_id": "setl_QU7EEQTUL1P36P",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_QU7EEQTUL1P36P. Its UTR is exactly the reference on this record (UTR2026072977889)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_QU7EEQTUL1P36P.\nexpected_amount_paise: 449100\nactual_amount_paise: 439826\nfees_paise: 7859\ntax_paise: 1415\npredicted_net_paise: 439826\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 7859\n  tds_at_1pct_paise: 4491\n  fx_markup_at_3pct_paise: 13473\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "INV-1022",
@@ -565,7 +644,7 @@
         "settlement_id": null,
         "primary_cause": "dispute_hold",
         "contributing_causes": [],
-        "explanation": "The order of \u20b918,951.00 placed 24 days ago has no settlement yet, which is well beyond Razorpay\u2019s T+2 settlement window. This indicates the funds are being held, likely due to a dispute. Please contact Razorpay support to investigate and release the amount.",
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -590,12 +669,12 @@
         "record_id": "ORD-1023",
         "business_type": "ecommerce",
         "expected_amount_paise": 626416,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 624115,
+        "settlement_id": "setl_4J1RIPZIM6CFNF",
+        "primary_cause": "gst_on_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -605,10 +684,10 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_4J1RIPZIM6CFNF. expected_amount_paise: 626416 actual_amount_paise: 624115 fees_paise: 12784 tax_paise: 2301 predicted_net_paise: 611331 residual_paise: -12784 residual_pct_of_expected: -2.0408 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 12784 tds_at_1pct_paise: 6264 fx_markup_at_3pct_paise: 18792 residual_in_rupees: -127.84"
+            "detail": "Reconciled against settlement setl_4J1RIPZIM6CFNF.\nexpected_amount_paise: 626416\nactual_amount_paise: 624115\nfees_paise: 12784\ntax_paise: 2301\npredicted_net_paise: 611331\nresidual_paise: -12784\nresidual_pct_of_expected: -2.0408\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 12784\n  tds_at_1pct_paise: 6264\n  fx_markup_at_3pct_paise: 18792\nresidual_in_rupees: -127.84"
           }
         ],
-        "status": "unresolved"
+        "status": "explained"
       },
       {
         "record_id": "ORD-1024",
@@ -616,12 +695,28 @@
         "expected_amount_paise": 205200,
         "actual_amount_paise": null,
         "settlement_id": null,
-        "primary_cause": "unresolved",
+        "primary_cause": "in_transit",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "not found",
+            "detail": "No settlement has a UTR equal to this reference (UTR2026082363424)."
+          },
+          {
+            "step": "try_fuzzy_match",
+            "result": "not found",
+            "detail": "No match: no settlement reference is a truncation or near-miss of this one."
+          },
+          {
+            "step": "days_awaiting_settlement",
+            "result": "ok",
+            "detail": "This order was placed 0 days ago and no settlement exists for it. Razorpay settles on a T+2 cycle."
+          }
+        ],
+        "status": "in_transit"
       },
       {
         "record_id": "INV-1025",
@@ -630,10 +725,8 @@
         "actual_amount_paise": 1156155,
         "settlement_id": "setl_3O18A5UR7KO64T",
         "primary_cause": "gst_on_fee",
-        "contributing_causes": [
-          "mdr_fee"
-        ],
-        "explanation": "The expected \u20b911,604.18 was already net of the processing fee, but Razorpay deducted the fee again, leaving a shortfall of \u20b9236.82 (the fee amount). The GST on the fee (\u20b942.63) is already accounted for, so no further action is needed.",
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -644,7 +737,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_3O18A5UR7KO64T. expected_amount_paise: 1160418 actual_amount_paise: 1156155 fees_paise: 23682 tax_paise: 4263 predicted_net_paise: 1132473 residual_paise: -23682 residual_pct_of_expected: -2.0408 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 23682 tds_at_1pct_paise: 11604 fx_markup_at_3pct_paise: 34813 residual_in_rupees: -236.82"
+            "detail": "Reconciled against settlement setl_3O18A5UR7KO64T.\nexpected_amount_paise: 1160418\nactual_amount_paise: 1156155\nfees_paise: 23682\ntax_paise: 4263\npredicted_net_paise: 1132473\nresidual_paise: -23682\nresidual_pct_of_expected: -2.0408\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 23682\n  tds_at_1pct_paise: 11604\n  fx_markup_at_3pct_paise: 34813\nresidual_in_rupees: -236.82"
           }
         ],
         "status": "explained"
@@ -657,7 +750,7 @@
         "settlement_id": "setl_JRNY20479T6VXD",
         "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The settlement amount is \u20b918,503.84, which is \u20b9390.16 less than the expected \u20b918,894.00. This difference exactly equals the processing fee of \u20b9330.64 plus its GST of \u20b959.52, as shown on the Razorpay settlement. This is normal and requires no action from your finance team.",
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -668,7 +761,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_JRNY20479T6VXD. expected_amount_paise: 1889400 actual_amount_paise: 1850384 fees_paise: 33064 tax_paise: 5952 predicted_net_paise: 1850384 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 33064 tds_at_1pct_paise: 18894 fx_markup_at_3pct_paise: 56682 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_JRNY20479T6VXD.\nexpected_amount_paise: 1889400\nactual_amount_paise: 1850384\nfees_paise: 33064\ntax_paise: 5952\npredicted_net_paise: 1850384\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 33064\n  tds_at_1pct_paise: 18894\n  fx_markup_at_3pct_paise: 56682\nresidual_in_rupees: 0.00"
           }
         ],
         "status": "matched"
@@ -677,27 +770,54 @@
         "record_id": "BKG-1027",
         "business_type": "bookings",
         "expected_amount_paise": 2958900,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 2868209,
+        "settlement_id": "setl_NHL1N13JCAT9MX",
+        "primary_cause": "tds",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_NHL1N13JCAT9MX. Its UTR is exactly the reference on this record (UTR2026081844099)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_NHL1N13JCAT9MX.\nexpected_amount_paise: 2958900\nactual_amount_paise: 2868209\nfees_paise: 51781\ntax_paise: 9321\npredicted_net_paise: 2897798\nresidual_paise: 29589\nresidual_pct_of_expected: 1.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 51781\n  tds_at_1pct_paise: 29589\n  fx_markup_at_3pct_paise: 88767\nresidual_in_rupees: 295.89"
+          }
+        ],
+        "status": "explained"
       },
       {
         "record_id": "ORD-1028",
         "business_type": "ecommerce",
         "expected_amount_paise": 669900,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 656067,
+        "settlement_id": "setl_4WIRE8QJNV8Z2F",
+        "primary_cause": "utr_mismatch",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "not found",
+            "detail": "No settlement has a UTR equal to this reference (UTR2026080336)."
+          },
+          {
+            "step": "try_fuzzy_match",
+            "result": "found",
+            "detail": "Matched settlement setl_4WIRE8QJNV8Z2F: reference is the first 13 characters of UTR UTR2026080336130."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_4WIRE8QJNV8Z2F.\nexpected_amount_paise: 669900\nactual_amount_paise: 656067\nfees_paise: 11723\ntax_paise: 2110\npredicted_net_paise: 656067\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 11723\n  tds_at_1pct_paise: 6699\n  fx_markup_at_3pct_paise: 20097\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "INV-1029",
@@ -707,7 +827,7 @@
         "settlement_id": "setl_OZCYWD14VE92MP",
         "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The expected amount of \u20b919,961.00 was settled as \u20b919,405.13 after the processing fee of \u20b9471.08 and its GST of \u20b984.79 were deducted. The figures reconcile exactly, so no further action is required.",
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -718,7 +838,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_OZCYWD14VE92MP. expected_amount_paise: 1996100 actual_amount_paise: 1940513 fees_paise: 47108 tax_paise: 8479 predicted_net_paise: 1940513 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 47108 tds_at_1pct_paise: 19961 fx_markup_at_3pct_paise: 59883 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_OZCYWD14VE92MP.\nexpected_amount_paise: 1996100\nactual_amount_paise: 1940513\nfees_paise: 47108\ntax_paise: 8479\npredicted_net_paise: 1940513\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 47108\n  tds_at_1pct_paise: 19961\n  fx_markup_at_3pct_paise: 59883\nresidual_in_rupees: 0.00"
           }
         ],
         "status": "matched"
@@ -727,40 +847,73 @@
         "record_id": "ORD-1030",
         "business_type": "ecommerce",
         "expected_amount_paise": 333500,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 256722,
+        "settlement_id": "setl_D8W3ZP08J3TRP0",
+        "primary_cause": "partial_refund",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_D8W3ZP08J3TRP0. Its UTR is exactly the reference on this record (UTR2026082074251)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_D8W3ZP08J3TRP0.\nexpected_amount_paise: 333500\nactual_amount_paise: 256722\nfees_paise: 7871\ntax_paise: 1417\npredicted_net_paise: 324212\nresidual_paise: 67490\nresidual_pct_of_expected: 20.2369\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 7871\n  tds_at_1pct_paise: 3335\n  fx_markup_at_3pct_paise: 10005\nresidual_in_rupees: 674.90"
+          }
+        ],
+        "status": "explained"
       },
       {
         "record_id": "BKG-1031",
         "business_type": "bookings",
         "expected_amount_paise": 1908900,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 1812214,
+        "settlement_id": "setl_IQVNB4GH2M5ZJA",
+        "primary_cause": "fx_markup",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_IQVNB4GH2M5ZJA. Its UTR is exactly the reference on this record (UTR2026081269087)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_IQVNB4GH2M5ZJA.\nexpected_amount_paise: 1908900\nactual_amount_paise: 1812214\nfees_paise: 33406\ntax_paise: 6013\npredicted_net_paise: 1869481\nresidual_paise: 57267\nresidual_pct_of_expected: 3.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 33406\n  tds_at_1pct_paise: 19089\n  fx_markup_at_3pct_paise: 57267\nresidual_in_rupees: 572.67"
+          }
+        ],
+        "status": "explained"
       },
       {
         "record_id": "INV-1032",
         "business_type": "saas",
         "expected_amount_paise": 725900,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 698426,
+        "settlement_id": "setl_TIRZQAKOIXNTM9",
+        "primary_cause": "tds",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_TIRZQAKOIXNTM9. Its UTR is exactly the reference on this record (UTR2026082074038)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_TIRZQAKOIXNTM9.\nexpected_amount_paise: 725900\nactual_amount_paise: 698426\nfees_paise: 17131\ntax_paise: 3084\npredicted_net_paise: 705685\nresidual_paise: 7259\nresidual_pct_of_expected: 1.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 17131\n  tds_at_1pct_paise: 7259\n  fx_markup_at_3pct_paise: 21777\nresidual_in_rupees: 72.59"
+          }
+        ],
+        "status": "explained"
       },
       {
         "record_id": "INV-1033",
@@ -769,10 +922,8 @@
         "actual_amount_paise": 1850394,
         "settlement_id": "setl_LIZL08YG0JV1V9",
         "primary_cause": "mdr_fee",
-        "contributing_causes": [
-          "gst_on_fee"
-        ],
-        "explanation": "The expected Rs\u202f19,034.00 was settled as Rs\u202f18,503.94 after a processing fee of Rs\u202f449.20 and its GST of Rs\u202f80.86 were deducted. The fee and GST fully explain the gap, so no action is needed.",
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -783,7 +934,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_LIZL08YG0JV1V9. expected_amount_paise: 1903400 actual_amount_paise: 1850394 fees_paise: 44920 tax_paise: 8086 predicted_net_paise: 1850394 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 44920 tds_at_1pct_paise: 19034 fx_markup_at_3pct_paise: 57102 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_LIZL08YG0JV1V9.\nexpected_amount_paise: 1903400\nactual_amount_paise: 1850394\nfees_paise: 44920\ntax_paise: 8086\npredicted_net_paise: 1850394\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 44920\n  tds_at_1pct_paise: 19034\n  fx_markup_at_3pct_paise: 57102\nresidual_in_rupees: 0.00"
           }
         ],
         "status": "matched"
@@ -794,12 +945,28 @@
         "expected_amount_paise": 1422100,
         "actual_amount_paise": null,
         "settlement_id": null,
-        "primary_cause": "unresolved",
+        "primary_cause": "in_transit",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "not found",
+            "detail": "No settlement has a UTR equal to this reference (UTR2026082257301)."
+          },
+          {
+            "step": "try_fuzzy_match",
+            "result": "not found",
+            "detail": "No match: no settlement reference is a truncation or near-miss of this one."
+          },
+          {
+            "step": "days_awaiting_settlement",
+            "result": "ok",
+            "detail": "This order was placed 1 days ago and no settlement exists for it. Razorpay settles on a T+2 cycle."
+          }
+        ],
+        "status": "in_transit"
       },
       {
         "record_id": "INV-1035",
@@ -808,12 +975,9 @@
         "actual_amount_paise": 489653,
         "settlement_id": "setl_9TZE5R5UQPGB7R",
         "primary_cause": "partial_refund",
-        "contributing_causes": [
-          "mdr_fee",
-          "gst_on_fee"
-        ],
-        "explanation": "You expected \u20b96,878.00 but Razorpay settled \u20b94,896.53. After deducting the processing fee of \u20b9162.32 and its GST of \u20b929.22, there is still a shortfall of \u20b91,789.93, which corresponds to a partial refund of the order. The refund has already been applied, so no further action is required.",
-        "confidence": 0.8,
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -823,7 +987,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_9TZE5R5UQPGB7R. expected_amount_paise: 687800 actual_amount_paise: 489653 fees_paise: 16232 tax_paise: 2922 predicted_net_paise: 668646 residual_paise: 178993 residual_pct_of_expected: 26.024 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 16232 tds_at_1pct_paise: 6878 fx_markup_at_3pct_paise: 20634 residual_in_rupees: 1789.93"
+            "detail": "Reconciled against settlement setl_9TZE5R5UQPGB7R.\nexpected_amount_paise: 687800\nactual_amount_paise: 489653\nfees_paise: 16232\ntax_paise: 2922\npredicted_net_paise: 668646\nresidual_paise: 178993\nresidual_pct_of_expected: 26.024\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 16232\n  tds_at_1pct_paise: 6878\n  fx_markup_at_3pct_paise: 20634\nresidual_in_rupees: 1789.93"
           }
         ],
         "status": "explained"
@@ -832,12 +996,12 @@
         "record_id": "ORD-1036",
         "business_type": "ecommerce",
         "expected_amount_paise": 703400,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 686798,
+        "settlement_id": "setl_YF38DIUOVW1N6K",
+        "primary_cause": "rounding_drift",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -847,23 +1011,34 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_YF38DIUOVW1N6K. expected_amount_paise: 703400 actual_amount_paise: 686798 fees_paise: 14068 tax_paise: 2532 predicted_net_paise: 686800 residual_paise: 2 residual_pct_of_expected: 0.0003 gst_correctly_charged: True within_rounding_tolerance: True settlement_lag_days: 2 reference_amounts: processing_fee_paise: 14068 tds_at_1pct_paise: 7034 fx_markup_at_3pct_paise: 21102 residual_in_rupees: 0.02"
+            "detail": "Reconciled against settlement setl_YF38DIUOVW1N6K.\nexpected_amount_paise: 703400\nactual_amount_paise: 686798\nfees_paise: 14068\ntax_paise: 2532\npredicted_net_paise: 686800\nresidual_paise: 2\nresidual_pct_of_expected: 0.0003\ngst_correctly_charged: True\nwithin_rounding_tolerance: True\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 14068\n  tds_at_1pct_paise: 7034\n  fx_markup_at_3pct_paise: 21102\nresidual_in_rupees: 0.02"
           }
         ],
-        "status": "unresolved"
+        "status": "explained"
       },
       {
         "record_id": "BKG-1037",
         "business_type": "bookings",
         "expected_amount_paise": 4006900,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 3895316,
+        "settlement_id": "setl_V08HHXFGCAQVKI",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_V08HHXFGCAQVKI. Its UTR is exactly the reference on this record (UTR2026081017894)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_V08HHXFGCAQVKI.\nexpected_amount_paise: 4006900\nactual_amount_paise: 3895316\nfees_paise: 94563\ntax_paise: 17021\npredicted_net_paise: 3895316\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 94563\n  tds_at_1pct_paise: 40069\n  fx_markup_at_3pct_paise: 120207\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "BKG-1038",
@@ -872,11 +1047,8 @@
         "actual_amount_paise": 1961441,
         "settlement_id": "setl_V2HEIFJFC2V37P",
         "primary_cause": "rounding_drift",
-        "contributing_causes": [
-          "mdr_fee",
-          "gst_on_fee"
-        ],
-        "explanation": "The settlement is \u20b919,614.41 versus the expected \u20b920,028.00 after deducting the processing fee of \u20b9350.49 and its GST of \u20b963.09. The \u20b90.01 difference is just a rounding drift, so no action is needed.",
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -887,7 +1059,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_V2HEIFJFC2V37P. expected_amount_paise: 2002800 actual_amount_paise: 1961441 fees_paise: 35049 tax_paise: 6309 predicted_net_paise: 1961442 residual_paise: 1 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: True settlement_lag_days: 2 reference_amounts: processing_fee_paise: 35049 tds_at_1pct_paise: 20028 fx_markup_at_3pct_paise: 60084 residual_in_rupees: 0.01"
+            "detail": "Reconciled against settlement setl_V2HEIFJFC2V37P.\nexpected_amount_paise: 2002800\nactual_amount_paise: 1961441\nfees_paise: 35049\ntax_paise: 6309\npredicted_net_paise: 1961442\nresidual_paise: 1\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: True\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 35049\n  tds_at_1pct_paise: 20028\n  fx_markup_at_3pct_paise: 60084\nresidual_in_rupees: 0.01"
           }
         ],
         "status": "explained"
@@ -896,38 +1068,65 @@
         "record_id": "ORD-1039",
         "business_type": "ecommerce",
         "expected_amount_paise": 413900,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 402374,
+        "settlement_id": "setl_SRCBPLJD84U89Y",
+        "primary_cause": "utr_mismatch",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "not found",
+            "detail": "No settlement has a UTR equal to this reference (UTR2026073145)."
+          },
+          {
+            "step": "try_fuzzy_match",
+            "result": "found",
+            "detail": "Matched settlement setl_SRCBPLJD84U89Y: reference is the first 13 characters of UTR UTR2026073145683."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_SRCBPLJD84U89Y.\nexpected_amount_paise: 413900\nactual_amount_paise: 402374\nfees_paise: 9768\ntax_paise: 1758\npredicted_net_paise: 402374\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 9768\n  tds_at_1pct_paise: 4139\n  fx_markup_at_3pct_paise: 12417\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "ORD-1040",
         "business_type": "ecommerce",
         "expected_amount_paise": 62900,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 61416,
+        "settlement_id": "setl_PK9P38QOLDFORX",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_PK9P38QOLDFORX. Its UTR is exactly the reference on this record (UTR2026073095394)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_PK9P38QOLDFORX.\nexpected_amount_paise: 62900\nactual_amount_paise: 61416\nfees_paise: 1258\ntax_paise: 226\npredicted_net_paise: 61416\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 1258\n  tds_at_1pct_paise: 629\n  fx_markup_at_3pct_paise: 1887\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "BKG-1041",
         "business_type": "bookings",
         "expected_amount_paise": 2774400,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 2689365,
+        "settlement_id": "setl_LL8OS9XTOGN1W1",
+        "primary_cause": "tds",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -937,47 +1136,69 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_LL8OS9XTOGN1W1. expected_amount_paise: 2774400 actual_amount_paise: 2689365 fees_paise: 48552 tax_paise: 8739 predicted_net_paise: 2717109 residual_paise: 27744 residual_pct_of_expected: 1.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 48552 tds_at_1pct_paise: 27744 fx_markup_at_3pct_paise: 83232 residual_in_rupees: 277.44"
+            "detail": "Reconciled against settlement setl_LL8OS9XTOGN1W1.\nexpected_amount_paise: 2774400\nactual_amount_paise: 2689365\nfees_paise: 48552\ntax_paise: 8739\npredicted_net_paise: 2717109\nresidual_paise: 27744\nresidual_pct_of_expected: 1.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 48552\n  tds_at_1pct_paise: 27744\n  fx_markup_at_3pct_paise: 83232\nresidual_in_rupees: 277.44"
           }
         ],
-        "status": "unresolved"
+        "status": "explained"
       },
       {
         "record_id": "BKG-1042",
         "business_type": "bookings",
         "expected_amount_paise": 1484000,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 1408835,
+        "settlement_id": "setl_5RBW2ZLAOI4E8X",
+        "primary_cause": "fx_markup",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_5RBW2ZLAOI4E8X. Its UTR is exactly the reference on this record (UTR2026081467424)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_5RBW2ZLAOI4E8X.\nexpected_amount_paise: 1484000\nactual_amount_paise: 1408835\nfees_paise: 25970\ntax_paise: 4675\npredicted_net_paise: 1453355\nresidual_paise: 44520\nresidual_pct_of_expected: 3.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 25970\n  tds_at_1pct_paise: 14840\n  fx_markup_at_3pct_paise: 44520\nresidual_in_rupees: 445.20"
+          }
+        ],
+        "status": "explained"
       },
       {
         "record_id": "ORD-1043",
         "business_type": "ecommerce",
         "expected_amount_paise": 156100,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 152416,
+        "settlement_id": "setl_ORQQFGV0EC14M2",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_ORQQFGV0EC14M2. Its UTR is exactly the reference on this record (UTR2026080745838)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_ORQQFGV0EC14M2.\nexpected_amount_paise: 156100\nactual_amount_paise: 152416\nfees_paise: 3122\ntax_paise: 562\npredicted_net_paise: 152416\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 3122\n  tds_at_1pct_paise: 1561\n  fx_markup_at_3pct_paise: 4683\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "BKG-1044",
         "business_type": "bookings",
         "expected_amount_paise": 1900900,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 1799012,
+        "settlement_id": "setl_UX5QRL1N759IN4",
+        "primary_cause": "fx_markup",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -987,10 +1208,10 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_UX5QRL1N759IN4. expected_amount_paise: 1900900 actual_amount_paise: 1799012 fees_paise: 38018 tax_paise: 6843 predicted_net_paise: 1856039 residual_paise: 57027 residual_pct_of_expected: 3.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 38018 tds_at_1pct_paise: 19009 fx_markup_at_3pct_paise: 57027 residual_in_rupees: 570.27"
+            "detail": "Reconciled against settlement setl_UX5QRL1N759IN4.\nexpected_amount_paise: 1900900\nactual_amount_paise: 1799012\nfees_paise: 38018\ntax_paise: 6843\npredicted_net_paise: 1856039\nresidual_paise: 57027\nresidual_pct_of_expected: 3.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 38018\n  tds_at_1pct_paise: 19009\n  fx_markup_at_3pct_paise: 57027\nresidual_in_rupees: 570.27"
           }
         ],
-        "status": "unresolved"
+        "status": "explained"
       },
       {
         "record_id": "ORD-1045",
@@ -998,12 +1219,28 @@
         "expected_amount_paise": 366500,
         "actual_amount_paise": null,
         "settlement_id": null,
-        "primary_cause": "unresolved",
+        "primary_cause": "dispute_hold",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "not found",
+            "detail": "No settlement has a UTR equal to this reference (UTR2026081351704)."
+          },
+          {
+            "step": "try_fuzzy_match",
+            "result": "not found",
+            "detail": "No match: no settlement reference is a truncation or near-miss of this one."
+          },
+          {
+            "step": "days_awaiting_settlement",
+            "result": "ok",
+            "detail": "This order was placed 11 days ago and no settlement exists for it. Razorpay settles on a T+2 cycle."
+          }
+        ],
+        "status": "explained"
       },
       {
         "record_id": "BKG-1046",
@@ -1012,10 +1249,8 @@
         "actual_amount_paise": 3172909,
         "settlement_id": "setl_9RBSV55PSQ0OXF",
         "primary_cause": "mdr_fee",
-        "contributing_causes": [
-          "gst_on_fee"
-        ],
-        "explanation": "The expected \u20b932,496.00 was settled as \u20b931,729.09 after the processing fee of \u20b9649.92 and its GST of \u20b9116.99, leaving no residual. The amounts reconcile fully, so no action is needed.",
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -1026,7 +1261,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_9RBSV55PSQ0OXF. expected_amount_paise: 3249600 actual_amount_paise: 3172909 fees_paise: 64992 tax_paise: 11699 predicted_net_paise: 3172909 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 64992 tds_at_1pct_paise: 32496 fx_markup_at_3pct_paise: 97488 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_9RBSV55PSQ0OXF.\nexpected_amount_paise: 3249600\nactual_amount_paise: 3172909\nfees_paise: 64992\ntax_paise: 11699\npredicted_net_paise: 3172909\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 64992\n  tds_at_1pct_paise: 32496\n  fx_markup_at_3pct_paise: 97488\nresidual_in_rupees: 0.00"
           }
         ],
         "status": "matched"
@@ -1038,10 +1273,8 @@
         "actual_amount_paise": 1599636,
         "settlement_id": "setl_X444NLZ15BCW79",
         "primary_cause": "mdr_fee",
-        "contributing_causes": [
-          "gst_on_fee"
-        ],
-        "explanation": "The expected \u20b916,383.00 was settled as \u20b915,996.36 after Razorpay deducted the processing fee of \u20b9327.66 and the GST of \u20b958.98 on that fee. This is normal and no action is needed.",
+        "contributing_causes": [],
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -1052,7 +1285,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_X444NLZ15BCW79. expected_amount_paise: 1638300 actual_amount_paise: 1599636 fees_paise: 32766 tax_paise: 5898 predicted_net_paise: 1599636 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 32766 tds_at_1pct_paise: 16383 fx_markup_at_3pct_paise: 49149 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_X444NLZ15BCW79.\nexpected_amount_paise: 1638300\nactual_amount_paise: 1599636\nfees_paise: 32766\ntax_paise: 5898\npredicted_net_paise: 1599636\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 32766\n  tds_at_1pct_paise: 16383\n  fx_markup_at_3pct_paise: 49149\nresidual_in_rupees: 0.00"
           }
         ],
         "status": "matched"
@@ -1065,7 +1298,7 @@
         "settlement_id": "setl_PY6B2KNFTU2GC5",
         "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The \u20b96,417.00 expected settlement is lower by the processing fee of \u20b9112.30 plus GST of \u20b920.21, which exactly matches the \u20b96,284.49 actually settled. The amounts reconcile with no residual, so no action is required.",
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -1076,7 +1309,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_PY6B2KNFTU2GC5. expected_amount_paise: 641700 actual_amount_paise: 628449 fees_paise: 11230 tax_paise: 2021 predicted_net_paise: 628449 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 11230 tds_at_1pct_paise: 6417 fx_markup_at_3pct_paise: 19251 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_PY6B2KNFTU2GC5.\nexpected_amount_paise: 641700\nactual_amount_paise: 628449\nfees_paise: 11230\ntax_paise: 2021\npredicted_net_paise: 628449\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 11230\n  tds_at_1pct_paise: 6417\n  fx_markup_at_3pct_paise: 19251\nresidual_in_rupees: 0.00"
           }
         ],
         "status": "matched"
@@ -1085,12 +1318,12 @@
         "record_id": "ORD-1049",
         "business_type": "ecommerce",
         "expected_amount_paise": 537600,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 524913,
+        "settlement_id": "setl_IWQY6QKTC89K8Y",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -1100,21 +1333,21 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_IWQY6QKTC89K8Y. expected_amount_paise: 537600 actual_amount_paise: 524913 fees_paise: 10752 tax_paise: 1935 predicted_net_paise: 524913 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 10752 tds_at_1pct_paise: 5376 fx_markup_at_3pct_paise: 16128 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_IWQY6QKTC89K8Y.\nexpected_amount_paise: 537600\nactual_amount_paise: 524913\nfees_paise: 10752\ntax_paise: 1935\npredicted_net_paise: 524913\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 10752\n  tds_at_1pct_paise: 5376\n  fx_markup_at_3pct_paise: 16128\nresidual_in_rupees: 0.00"
           }
         ],
-        "status": "unresolved"
+        "status": "matched"
       },
       {
         "record_id": "ORD-1050",
         "business_type": "ecommerce",
         "expected_amount_paise": 404200,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 395853,
+        "settlement_id": "setl_DNMKZA3OA52960",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
         "trace": [
           {
             "step": "try_exact_match",
@@ -1124,36 +1357,58 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_DNMKZA3OA52960. expected_amount_paise: 404200 actual_amount_paise: 395853 fees_paise: 7074 tax_paise: 1273 predicted_net_paise: 395853 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 7074 tds_at_1pct_paise: 4042 fx_markup_at_3pct_paise: 12126 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_DNMKZA3OA52960.\nexpected_amount_paise: 404200\nactual_amount_paise: 395853\nfees_paise: 7074\ntax_paise: 1273\npredicted_net_paise: 395853\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 7074\n  tds_at_1pct_paise: 4042\n  fx_markup_at_3pct_paise: 12126\nresidual_in_rupees: 0.00"
           }
         ],
-        "status": "unresolved"
+        "status": "matched"
       },
       {
         "record_id": "BKG-1051",
         "business_type": "bookings",
         "expected_amount_paise": 2025600,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 1969192,
+        "settlement_id": "setl_GJ11YEDWB2BNE6",
+        "primary_cause": "rounding_drift",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_GJ11YEDWB2BNE6. Its UTR is exactly the reference on this record (UTR2026072993442)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_GJ11YEDWB2BNE6.\nexpected_amount_paise: 2025600\nactual_amount_paise: 1969192\nfees_paise: 47804\ntax_paise: 8605\npredicted_net_paise: 1969191\nresidual_paise: -1\nresidual_pct_of_expected: -0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: True\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 47804\n  tds_at_1pct_paise: 20256\n  fx_markup_at_3pct_paise: 60768\nresidual_in_rupees: -0.01"
+          }
+        ],
+        "status": "explained"
       },
       {
         "record_id": "ORD-1052",
         "business_type": "ecommerce",
         "expected_amount_paise": 297600,
-        "actual_amount_paise": null,
-        "settlement_id": null,
-        "primary_cause": "unresolved",
+        "actual_amount_paise": 291455,
+        "settlement_id": "setl_25NSJF678K52QC",
+        "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "found",
+            "detail": "Matched settlement setl_25NSJF678K52QC. Its UTR is exactly the reference on this record (UTR2026073027322)."
+          },
+          {
+            "step": "check_arithmetic_causes",
+            "result": "ok",
+            "detail": "Reconciled against settlement setl_25NSJF678K52QC.\nexpected_amount_paise: 297600\nactual_amount_paise: 291455\nfees_paise: 5208\ntax_paise: 937\npredicted_net_paise: 291455\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 5208\n  tds_at_1pct_paise: 2976\n  fx_markup_at_3pct_paise: 8928\nresidual_in_rupees: 0.00"
+          }
+        ],
+        "status": "matched"
       },
       {
         "record_id": "INV-1053",
@@ -1163,7 +1418,7 @@
         "settlement_id": "setl_82N2ATQYYV37DI",
         "primary_cause": "mdr_fee",
         "contributing_causes": [],
-        "explanation": "The settlement amount of \u20b98,157.32 is the expected \u20b98,391.00 less the processing fee of \u20b9198.03 and its GST of \u20b935.65, which fully accounts for the difference. No further action is required.",
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
         "confidence": 0.95,
         "trace": [
           {
@@ -1174,7 +1429,7 @@
           {
             "step": "check_arithmetic_causes",
             "result": "ok",
-            "detail": "Reconciled against settlement setl_82N2ATQYYV37DI. expected_amount_paise: 839100 actual_amount_paise: 815732 fees_paise: 19803 tax_paise: 3565 predicted_net_paise: 815732 residual_paise: 0 residual_pct_of_expected: 0.0 gst_correctly_charged: True within_rounding_tolerance: False settlement_lag_days: 2 reference_amounts: processing_fee_paise: 19803 tds_at_1pct_paise: 8391 fx_markup_at_3pct_paise: 25173 residual_in_rupees: 0.00"
+            "detail": "Reconciled against settlement setl_82N2ATQYYV37DI.\nexpected_amount_paise: 839100\nactual_amount_paise: 815732\nfees_paise: 19803\ntax_paise: 3565\npredicted_net_paise: 815732\nresidual_paise: 0\nresidual_pct_of_expected: 0.0\ngst_correctly_charged: True\nwithin_rounding_tolerance: False\nsettlement_lag_days: 2\nreference_amounts:\n  processing_fee_paise: 19803\n  tds_at_1pct_paise: 8391\n  fx_markup_at_3pct_paise: 25173\nresidual_in_rupees: 0.00"
           }
         ],
         "status": "matched"
@@ -1185,12 +1440,28 @@
         "expected_amount_paise": 314000,
         "actual_amount_paise": null,
         "settlement_id": null,
-        "primary_cause": "unresolved",
+        "primary_cause": "in_transit",
         "contributing_causes": [],
-        "explanation": "The agent did not return a diagnosis we could read for this record.",
-        "confidence": 0.0,
-        "trace": [],
-        "status": "unresolved"
+        "explanation": "The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+        "confidence": 0.95,
+        "trace": [
+          {
+            "step": "try_exact_match",
+            "result": "not found",
+            "detail": "No settlement has a UTR equal to this reference (UTR2026082239015)."
+          },
+          {
+            "step": "try_fuzzy_match",
+            "result": "not found",
+            "detail": "No match: no settlement reference is a truncation or near-miss of this one."
+          },
+          {
+            "step": "days_awaiting_settlement",
+            "result": "ok",
+            "detail": "This order was placed 1 days ago and no settlement exists for it. Razorpay settles on a T+2 cycle."
+          }
+        ],
+        "status": "in_transit"
       }
     ]
   }
