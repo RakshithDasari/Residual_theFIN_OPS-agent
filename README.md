@@ -1,254 +1,270 @@
 # Residual — Settlement Reconciliation Agent
 
----
-
-**TL;DR**
-- Merchant ledger + Razorpay settlements go in. Every discrepancy comes out classified, explained in plain English, and confidence-scored — in under 50ms for 55 records.
-- A deterministic engine does the matching and arithmetic (100% accurate on this batch). An LLM writes the explanation. Neither substitutes for the other.
-- Live: **[residual-thefin-ops-agent-ljb9.onrender.com](https://residual-thefin-ops-agent-ljb9.onrender.com)**
+**Live demo:** [residual-thefin-ops-agent-ljb9.onrender.com](https://residual-thefin-ops-agent-ljb9.onrender.com)
 
 ```bash
-# Run locally in two commands
+# Run locally
 uvicorn backend.main:app --port 8001
 npm run dev --prefix frontend
 ```
 
 ---
 
-## What is this and why does it exist
+## Why this problem
 
-Payment reconciliation has two layers. The first is straightforward — exact UTR matches, standard fee deductions, records that reconcile cleanly with basic arithmetic. Deterministic systems handle this reliably and quickly. The second layer is the interesting one: a settlement is net of fees that weren't recorded on the merchant's side, a reference has been truncated or transposed in transit, a record hasn't arrived yet versus one that's been held for a dispute, or several pieces of evidence need to be considered together to understand what actually happened. These are the cases that conventional automation flags as exceptions and hands to a human.
+Payment reconciliation looks simple until the records don't agree.
 
-Residual explores what a reconciliation layer built specifically for those cases could look like. The approach is: establish everything that can be established by code first — matching, arithmetic, timing — then let an agent work only on what remains. The agent's job isn't to redo what the deterministic engine already got right. It's to inspect the evidence, reason across the pieces that don't fit neatly into a rule, and produce an explanation with the work shown.
+One side says a payment should have settled for a certain amount. The other says something slightly different. Sometimes a fee explains the gap. Sometimes a reference was altered in transit. Sometimes the settlement arrived later than expected. Sometimes several pieces of evidence need to be read together. And sometimes there genuinely isn't enough information to know.
 
-The goal isn't to replace the financial system of record with a language model. It's to build the layer that makes sense of the cases that conventional automation deliberately leaves behind.
+Most reconciliation systems are very good at the cases that can be expressed as rules. The interesting problem starts after those rules have done their job — when a record doesn't fit any known pattern and someone has to figure out why.
 
----
+**Residual is an MVP exploring that problem: what does an intelligent investigation layer look like for the cases that deterministic reconciliation cannot cleanly resolve?**
 
-## The idea in one paragraph
-
-A deterministic engine handles all matching and arithmetic first — exact UTR references, fuzzy recovery of truncated or transposed references, fee and tax decomposition, settlement age. Once that evidence is collected, an LLM reads it and writes a two-sentence explanation a finance team can act on. The model never touches the classification or the arithmetic — those are always done by code. It only explains what the code already found. That division is the whole design: correctness from determinism, communication from the model.
+The design is deliberately simple. Code establishes what can be proven — matching, arithmetic, timing, known deduction patterns. Only then does the agent step in to investigate the remaining ambiguity and produce an explanation grounded in that evidence. The system isn't trying to make a language model the financial authority. It's exploring what happens when deterministic financial logic and agentic investigation are given clearly separated jobs.
 
 ---
 
-## What's in this MVP
+## The core architecture
 
-The MVP reconciles a batch of 55 synthetic records across three business types (ecommerce, SaaS, bookings) and eight discrepancy causes. It demonstrates the full end-to-end workflow:
+```mermaid
+flowchart TD
+    A[Payment records\nmerchant side + settlement side] --> B[Deterministic reconciliation\nmatching · arithmetic · timing]
+    B --> C{Resolved?}
+    C -->|yes| D[Result: cause · confidence · explanation]
+    C -->|no — residual remains| E[Agent investigation\ninspects evidence · reasons across records]
+    E --> F{Explained?}
+    F -->|yes| D
+    F -->|no evidence fits| G[UNRESOLVED → human review queue]
+    D --> H[Dashboard · CSV · Chat]
+    G --> H
+```
 
-- Batch reconciliation via the deterministic engine (runs in milliseconds, 100% accurate on this batch)
-- Per-record LLM explanations on demand (`/record/{id}?live=true`)
-- A conversational agent ("Reya") that answers questions about the batch in plain English
-- Four frontend views: a reconciliation stream, a records table, a dual-ledger side-by-side, and a chat interface
-- CSV export of the full reconciled batch
-- Accuracy metrics scored against held-back ground truth labels
+Everything else in the system supports this flow. The core pipeline does not depend on a language model — the model is an additional reasoning layer, not a dependency for correctness.
 
-The synthetic data mimics the structure of real Razorpay settlement exports and merchant order records exactly — same fields, same arithmetic, same edge cases. Swapping it for a real data feed requires changing two functions, not the architecture.
+---
 
-**A note on the accuracy numbers:** The 100% figures are measured against synthetic data I generated myself, with the answer labels held out from the engine during evaluation. The honest next step is scoring against an independently built holdout set, or real anonymised data — that hasn't happened yet.
+## What we built
+
+The MVP reconciles a batch of 55 synthetic records across three business types and eight discrepancy causes. It demonstrates the full workflow end to end:
+
+- A deterministic reconciliation engine that handles matching, arithmetic, and classification
+- An LLM agent that runs on demand for per-record investigation and explanation
+- A conversational interface ("Reya") for querying the batch in plain English
+- Four views: reconciliation stream, records table, side-by-side dual ledger, chat
+- CSV export and accuracy metrics scored against held-back ground truth labels
+
+Residual's core reconciliation pipeline does not depend on an LLM. The model is an additional reasoning interface — remove it and the financial classification still works correctly.
+
+---
+
+## Why synthetic data
+
+The MVP doesn't connect to a live financial system. Rather than hard-code a handful of examples, we generated a controlled dataset with known causes and kept the answer labels entirely separate from the reconciliation and agent layers.
+
+That gave us something more useful than realistic-looking data alone: a repeatable experiment. We can deliberately introduce specific discrepancy types, run the full pipeline, compare the result against the hidden ground truth, inspect any failures, change the system, and run it again. The dataset isn't there to claim production accuracy — it's there to make the engineering loop measurable.
 
 ---
 
 ## The interface
 
-**Reconciliation stream** — shows the five pipeline steps running in sequence (load, exact match, fuzzy match, arithmetic split, classify), then surfaces key findings as chat messages with links to the evidence for each flagged record.
+**Reconciliation stream** — the five pipeline steps run in sequence (load, match, recover, classify), then surface findings as chat messages with links to the evidence for each flagged record.
 
 ![Reconciliation stream showing pipeline steps and findings](pictures/stream.png)
 
 ---
 
-**Dual ledger** — merchant orders on the left, Razorpay settlements on the right. Hover either row to highlight its pair. Unmatched rows have a red marker. Click any row to open the engine's full explanation, breakdown, and reasoning trace in the right panel.
+**Dual ledger** — merchant records on the left, settlement records on the right. Hover either row to highlight its pair. Unmatched rows have a red marker. Click any row to open the full explanation, breakdown, and reasoning trace.
 
 ![Dual ledger view with side-by-side reconciliation and detail panel open](pictures/ledger.png)
 
 ---
 
-**Ask the agent (Reya)** — type a question in plain English and get a specific answer backed by the actual batch numbers. Reya knows every record, every gap, and every cause. She'll tell you exactly which ones need your attention and why.
+**Ask the agent (Reya)** — ask questions about the current reconciliation batch in plain English. The agent uses the reconciliation results and available evidence to explain which records need attention and why.
 
 ![Chat interface showing Reya answering a question about flagged records](pictures/chat.png)
 
 ---
 
-## How this works in production
+## The first version failed — here's what we changed
 
-In the MVP, the two data sources are JSON files. In a real deployment they become live feeds — two new ingest endpoints replace the files, and the rest of the system stays identical.
+The first version was more agentic in the wrong sense. The model chose which tools to call, performed its own arithmetic, found the match, and decided the cause.
 
-```mermaid
-flowchart LR
-    subgraph Sources["Live data sources"]
-        OE[Merchant ERP\norder created webhook]
-        RZ[Razorpay\n/v1/settlements + /recon\nor settlement webhook]
-    end
-
-    subgraph Ingest["New ingest endpoints"]
-        IE[POST /ingest/expected]
-        IS[POST /ingest/settlements]
-    end
-
-    subgraph Core["Unchanged core"]
-        DB[(Database\nexpected · settlements\nreconciled results)]
-        EN[Reconciliation engine\nsame code]
-        AG[Agent + Chat\nsame code]
-    end
-
-    subgraph Out["Output"]
-        DA[Dashboard]
-        AL[Alerts / review queue]
-        CS[CSV export]
-        CH[Chat]
-    end
-
-    OE --> IE --> DB
-    RZ --> IS --> DB
-    DB --> EN --> DB
-    DB --> AG
-    EN --> DA & AL & CS
-    AG --> CH
+```
+First version — full model autonomy
+Pairing accuracy       45.5%
+Diagnosis accuracy     36.4%
 ```
 
-What stays the same: the entire reconciliation engine, agent, API, and frontend.
-What changes: `load_batch()` reads from a database instead of JSON. The engine runs on a T+2 schedule or triggers on incoming webhooks. Results are persisted rather than recomputed on every request.
+Instead of tuning the prompt, we stepped back and asked a simpler question: **which parts of this problem actually require a model?**
+
+Matching records doesn't. Computing fees doesn't. Checking settlement age doesn't. These are deterministic operations — code does them correctly every time.
+
+So we moved those responsibilities into the engine and left the model with the part that genuinely benefits from reasoning: explaining the evidence and handling the ambiguous cases where no clean rule applies.
+
+Two bugs also surfaced during this process. The model provider was rejecting a message role that the agent framework was inserting. The auto-generated tool schema contained a field that strict validators rejected silently. Neither raised an exception — the model just received malformed input and returned garbage. Fixing both required reading the actual API response format rather than assuming compatibility.
+
+After the architectural change:
+
+```
+Revised version — deterministic evidence, model for explanation only
+Pairing accuracy       100%
+Diagnosis accuracy     100%
+```
+
+The system improved because we gave the model less to do, not more.
+
+These numbers are measured against a synthetic evaluation batch with self-generated ground truth. That's an MVP measurement, not a production claim — an independent holdout set is the obvious next step.
 
 ---
 
-## The reconciliation pipeline
+## How the reconciliation pipeline works
 
 ```mermaid
 flowchart TD
-    A[ExpectedRecord + SettlementRecord list] --> B{try_exact_match\nUTR == reference_hint?}
+    A[Merchant records + Settlement records] --> B{Exact reference match?}
     B -->|found| E[check_arithmetic_causes]
-    B -->|not found| C{try_fuzzy_match\ntruncation or ≤2 edits?}
+    B -->|not found| C{Fuzzy match?\ntruncation or ≤2 edits}
     C -->|found| E
     C -->|not found| D[days_awaiting_settlement]
     D -->|≤ 2 days| D1[IN_TRANSIT]
     D -->|> 2 days| D2[DISPUTE_HOLD]
-    E --> F{classify}
+    E --> F{Classify residual}
     F -->|residual == 0| G1[MDR_FEE · 0.99]
     F -->|residual ≈ −fees| G2[GST_ON_FEE · 0.97]
     F -->|residual ≈ gross×1%| G3[TDS · 0.95]
     F -->|residual ≈ gross×3%| G4[FX_MARKUP · 0.95]
     F -->|abs ≤ 2 paise| G5[ROUNDING_DRIFT · 0.92]
     F -->|≥ 10% of gross| G6[PARTIAL_REFUND · 0.78]
-    F -->|none match| G7[UNRESOLVED · 0.40]
+    F -->|nothing fits| G7[UNRESOLVED · 0.40]
     G1 & G2 & G3 & G4 & G5 & G6 & G7 --> H[ReconciledRecord\ncause · confidence · explanation · trace]
 ```
 
-This runs in under 50ms for 55 records. No model is consulted. Explanation text comes from `reporting/narrative.py` — a plain template per cause, fast and reliable. The LLM is an optional layer on top.
+No model is consulted in this pass. Template-based explanation prose is generated per cause by `reporting/narrative.py`. The LLM is a separate, optional layer.
 
 ---
 
-## The agentic architecture
-
-The LLM agent runs one record at a time, on demand — either via `/record/{id}?live=true` or when the chat needs a detailed explanation.
+## How the agent layer works
 
 ```mermaid
 flowchart TD
-    A[ExpectedRecord + Settlements] --> B[prepare_evidence\ndeterministic pre-pass]
-    B -->|calls| T1[try_exact_match]
-    B -->|calls| T2[try_fuzzy_match]
-    B -->|calls| T3[check_arithmetic_causes]
-    B -->|calls| T4[days_awaiting_settlement]
-    T1 & T2 & T3 & T4 --> C[evidence strings + trace steps]
-    C --> D[Build prompt\nrecord fields + evidence + 10-cause taxonomy]
-    D --> E[GLM-5.3-Flash\ntemp=0 · top_p=0.95 · tool_limit=6]
-    E --> F[parse_diagnosis\ntries: labelled lines → bold lines → fenced JSON → bare JSON]
-    F -->|parse ok| G[model explanation + confidence]
-    F -->|parse fails| H[template fallback explanation]
+    A[Record under investigation] --> B[prepare_evidence\ndeterministic pre-pass]
+    B --> T1[exact match]
+    B --> T2[fuzzy match]
+    B --> T3[arithmetic check]
+    B --> T4[days awaiting]
+    T1 & T2 & T3 & T4 --> C[evidence strings + trace]
+    C --> D[Prompt: record fields + collected evidence + cause taxonomy]
+    D --> E[GLM-5.3-Flash · temp=0]
+    E --> F[parse_diagnosis]
+    F -->|ok| G[model explanation + confidence]
+    F -->|fails| H[template fallback]
     G & H --> I[ReconciledRecord]
-    J[classify_evidence — always deterministic] -->|primary_cause| I
+    J[classify_evidence\nalways deterministic] -->|primary_cause| I
 
     style J fill:#1f3a5f,color:#fff
     style I fill:#1f3a5f,color:#fff
 ```
 
-**The key design decision:** `primary_cause` is always set by `classify_evidence()` — the same deterministic code as the batch engine. The model writes the explanation; it never sets the cause. A bad model response can degrade explanation quality but cannot change the classification or the accuracy metrics.
-
-**Why this matters:** The first version let the model do everything. It reached 45.5% pairing accuracy and 36.4% diagnosis accuracy. Once the architecture separated "gathering evidence" (code) from "explaining evidence" (model), accuracy hit 100%.
+`primary_cause` is always set by `classify_evidence()` — deterministic code, same logic as the batch engine. The model writes the explanation; it never sets the cause. A failed or malformed model response degrades explanation quality but cannot change the classification.
 
 ---
 
-## The chat agent ("Reya")
+## What production would actually require
+
+The MVP uses two synthetic data files so the pipeline can be evaluated without access to live financial systems. In a production version, those files would be replaced by authenticated ingestion interfaces, with validation, persistence, and asynchronous processing around the same core reconciliation and investigation flow.
 
 ```mermaid
-sequenceDiagram
-    participant U as User
-    participant FE as ChatPage
-    participant BE as POST /query
-    participant E as reconciler
-    participant M as GLM-5.3-Flash
+flowchart LR
+    subgraph Sources["Data sources"]
+        MS[Merchant order system\nwebhook on create]
+        PS[Payment gateway\nsettlement webhook or API poll]
+    end
 
-    U->>FE: types question + hits Send
-    FE->>BE: {query, history: [{role,content},...]}
-    BE->>E: reconcile_batch_deterministic()
-    E-->>BE: 55 reconciled records (<50ms)
-    BE->>M: system prompt (Reya persona + full batch context)\n+ conversation history + user question
-    M-->>BE: prose answer + optional |||JSON|||...|||END||| block
-    BE-->>FE: {answer: text, ui: {type, rows}}
-    FE->>U: chat bubble + optional records table / KPI strip / detail card
+    subgraph Ingestion["Ingestion layer\nnew in production"]
+        VI[Validate + deduplicate]
+        PE[Persist to store]
+    end
+
+    subgraph Core["Core — same as MVP"]
+        EN[Reconciliation engine]
+        AG[Agent investigation]
+    end
+
+    subgraph Out["Output"]
+        DA[Dashboard]
+        HR[Human review queue]
+        CS[CSV / audit trail]
+        CH[Chat interface]
+    end
+
+    MS --> VI --> PE --> EN
+    PS --> VI
+    EN -->|resolved| DA & CS
+    EN -->|unresolved| AG
+    AG -->|explained| DA
+    AG -->|still unresolved| HR
+    EN & AG --> CH
 ```
 
-If the model is unavailable (no key, rate limit, timeout), a keyword router handles the most common questions deterministically. The chat never breaks.
+The architecture scales at the ingestion and persistence boundaries — not in the reconciliation or agent logic, which stays the same.
 
 ---
 
-## Full application architecture
+## Full system architecture (MVP)
 
 ```mermaid
 flowchart TB
-    subgraph Frontend["Frontend — Render Static Site"]
-        LP[LandingPage /]
-        AS[AgentStream /app]
-        RP[RecordsPage /app/records]
-        CP[ChatPage /app/chat]
-        LD[LedgerPage /app/ledger]
-        API[src/api.js]
+    subgraph FE["Frontend — Render Static Site"]
+        LP[Landing /]
+        AS[Stream /app]
+        RP[Records /app/records]
+        CP[Chat /app/chat]
+        LD[Ledger /app/ledger]
     end
 
-    subgraph Backend["Backend — Render Web Service"]
-        MA[FastAPI routes\nmain.py]
+    subgraph BE["Backend — Render Web Service"]
+        MA[FastAPI · main.py]
         SV[service.py]
         EN[engine/reconciler.py]
         AG[agent/reasoning_agent.py]
-        RE[reporting/]
         EV[evaluation/eval.py]
     end
 
-    subgraph Data["Data"]
-        SB[synthetic_batch.json\n55 expected + 48 settlements]
-        GT[ground_truth.json\nanswer key]
+    subgraph DA["Data"]
+        SB[synthetic_batch.json]
+        GT[ground_truth.json]
     end
 
-    subgraph LLM["HuggingFace router"]
-        HF[zai-org/GLM-5.3-Flash\nOpenAI-compatible /v1]
+    subgraph LM["LLM"]
+        HF[GLM-5.3-Flash\nHuggingFace router]
     end
 
-    API -->|VITE_API_URL| MA
-    MA --> SV
-    SV --> EN
-    SV -->|on demand| AG
-    SV --> RE
-    SV --> EV
-    EN --> SB
-    EV --> GT
-    AG --> HF
+    FE -->|HTTP · VITE_API_URL| MA
+    MA --> SV --> EN --> SB
+    SV -->|on demand| AG --> HF
     SV -->|/query| HF
+    EV --> GT
 ```
 
 ---
 
-## Challenges faced and how accuracy improved
+## Current limitations
 
-**The first version.** Full autonomy to the model — it chose which tools to call, ran its own arithmetic, and named the cause. 45.5% pairing, 36.4% diagnosis. Confident, fast, mostly wrong.
+- The evaluation batch is synthetic and self-generated. The 100% figures are an MVP measurement, not a production claim. An independently constructed holdout set is the next honest step.
+- Fuzzy matching uses structural heuristics. At large scale with many same-day references, settlement amount would need to serve as a second matching signal.
+- Partial refund detection is a heuristic (≥10% of gross, no other known cause). A real deployment needs the merchant's refund records as a third source to confirm.
+- The chat agent re-runs the full batch on every query. In production this would be cached.
+- 2 records in this batch are genuinely unresolved — no cause fits the evidence. In production those route to a human review queue automatically.
 
-**Two bugs the logs didn't surface.** The HuggingFace router rejected a `developer` role Agno was inserting (it only accepts `system`, `user`, `assistant`). Agno's auto-generated tool JSON Schema included an invalid `additionalProperties: false` field that made strict validators reject every tool call silently. Neither raised an exception — the model just received bad input and returned garbage.
+---
 
-**The fix.** Stop asking the model to do things code does reliably. The engine now gathers all evidence deterministically before the model is consulted. The model receives a prompt with the matching result and arithmetic already computed. Its job is one thing: write a clear explanation. After this: 100% pairing, 100% diagnosis.
+## Where this could go
 
-**Remaining honest limitations:**
-- Fuzzy matching uses prefix + Levenshtein heuristics. Over millions of same-day UTRs, the amount would need to serve as a second signal.
-- Partial refund detection (≥10% of gross, no other cause) is a heuristic. A real deployment needs the merchant's refund records as a third source to confirm.
-- 2 unresolved records in this batch. In production these route to a human review queue.
-- The chat agent re-runs the full batch on every `/query` call. In production this would be cached.
-- The 100% accuracy figures are on synthetic self-generated data. An independent holdout set is the obvious next step.
+The current MVP deliberately stops before the hardest production problems: live ingestion, larger volumes, independent evaluation data, richer evidence sources, persistence, and human review workflows.
+
+Those aren't problems we wanted to hide behind a polished demo. They are the next engineering problems.
+
+The core idea stays the same regardless of scale: **prove what can be proven deterministically, investigate what can't, and keep the boundary between the two explicit.**
 
 ---
 
@@ -281,8 +297,8 @@ npm run dev
 Open `http://localhost:5173`. Health check: `http://localhost:8001/health`.
 
 ```bash
-python -m engine.reconciler   # run deterministic engine directly
-python -m evaluation.eval     # run evaluation against ground truth
+python -m engine.reconciler   # deterministic engine standalone
+python -m evaluation.eval     # score against ground truth
 ```
 
 ---
@@ -300,9 +316,8 @@ python -m evaluation.eval     # run evaluation against ground truth
 ## Project structure
 
 ```
-.
 ├── backend/         FastAPI routes + service layer
-├── engine/          Deterministic matcher, reconciler, Razorpay client
+├── engine/          Deterministic matcher, reconciler, settlement client
 ├── agent/           LLM agent, tools, 10-cause taxonomy
 ├── data/            Schemas, synthetic batch, ground truth
 ├── reporting/       Narrative templates, report builder, CSV export
