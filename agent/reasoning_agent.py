@@ -11,6 +11,7 @@ from agent import taxonomy
 from agent.tools import (
     MATCH_TOOLS,
     MATCHED_PREFIX,
+    as_function,
     check_arithmetic_causes,
     days_awaiting_settlement,
     try_exact_match,
@@ -41,7 +42,12 @@ reconciliation_agent = Agent(
     name="Settlement Reconciliation Agent",
     role="Work out whether a settlement matches what the merchant expected, and if not, why",
     model=model,
-    tools=[try_exact_match, try_fuzzy_match, check_arithmetic_causes, days_awaiting_settlement],
+    tools=[
+        as_function(try_exact_match),
+        as_function(try_fuzzy_match),
+        as_function(check_arithmetic_causes),
+        as_function(days_awaiting_settlement),
+    ],
     description=dedent("""\
         You are a settlement reconciliation analyst working one merchant record at a time.
 
@@ -301,6 +307,13 @@ if __name__ == "__main__":
     assert all(cause.value in system_message for cause in DiscrepancyCause), "a cause never reaches the model"
     assert len(reconciliation_agent.tools) == 4
     assert reconciliation_agent.tool_call_limit == MAX_TOOL_CALLS
+
+    # Groq rejects a call that omits a required property, and this model routinely sends
+    # no arguments, so an empty `required` is what keeps the run alive.
+    for registered in reconciliation_agent.tools:
+        registered.process_entrypoint()
+        assert not registered.parameters["required"], f"{registered.name} requires an argument"
+        assert set(registered.parameters["properties"]) == {"record_hint"}, registered.parameters
     assert reconciliation_agent.model.temperature == 0
     assert reconciliation_agent.model.top_p == 0.95
     assert reconciliation_agent.model.supports_native_structured_outputs is False
