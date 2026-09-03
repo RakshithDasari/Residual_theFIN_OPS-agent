@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8001'
 
 export const BATCH_LIMIT = 55
 
@@ -72,11 +72,11 @@ export function fetchRecord(recordId, { live = false } = {}) {
   return get(`/record/${encodeURIComponent(recordId)}${live ? '?live=true' : ''}`)
 }
 
-export async function askQuestion(query, limit = BATCH_LIMIT) {
+export async function askQuestion(query, limit = BATCH_LIMIT, history = []) {
   const response = await fetch(`${API_BASE}/query`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, limit }),
+    body: JSON.stringify({ query, limit, history }),
   })
   const payload = await response.json().catch(() => ({}))
   if (!response.ok) {

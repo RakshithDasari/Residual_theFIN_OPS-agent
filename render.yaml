@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: residual-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: HF_TOKEN
+        sync: false          # set manually in Render dashboard — never commit
+      - key: HF_BASE_URL
+        value: https://router.huggingface.co/v1
+      - key: HF_MODEL_ID
+        value: zai-org/GLM-5.3-Flash:novita
+      - key: FRONTEND_ORIGIN
+        sync: false          # e.g. https://residual.vercel.app,http://localhost:5173,http://localhost:4173

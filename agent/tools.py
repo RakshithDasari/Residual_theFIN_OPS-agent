@@ -11,10 +11,10 @@ MATCH_TOOLS = ("try_exact_match", "try_fuzzy_match")
 # other name the model invents, which would otherwise be a hard validation error.
 #
 # The sink is deliberately absent from the advertised schema. Left to read the signature,
-# Agno publishes `ignored` as a required property and Groq then rejects every call that
-# omits it — "missing properties: 'ignored'" — which fails the run. Declaring the schema
-# explicitly keeps `required` empty, so the hint, another name, or nothing at all are all
-# accepted and discarded.
+# Agno publishes `ignored` as a required property, and a strict tool-call validator then
+# rejects every call that omits it — "missing properties: 'ignored'" — which fails the run.
+# Declaring the schema explicitly keeps `required` empty, so the hint, another name, or
+# nothing at all are all accepted and discarded.
 HINT_SCHEMA = {
     "type": "object",
     "properties": {"record_hint": {"type": "string"}},
@@ -122,8 +122,8 @@ if __name__ == "__main__":
         schema.process_entrypoint()
         assert schema.description, f"{schema.name} has no docstring, so the model gets no description"
         assert set(schema.parameters["properties"]) == {"record_hint"}, schema.parameters
-        # An empty `required` is the whole point: Groq rejects any call omitting a required
-        # property, and the model routinely sends no arguments at all.
+        # An empty `required` is the whole point: a strict validator rejects any call that
+        # omits a required property, and the model routinely sends no arguments at all.
         assert not schema.parameters["required"], f"{schema.name} would reject an empty call"
 
         # Whatever the model invents has to reach the tool and be discarded, not raise.

@@ -1,4 +1,4 @@
-"""What the API layer calls. No FastAPI types here, so each function is testable alone.
+﻿"""What the API layer calls. No FastAPI types here, so each function is testable alone.
 
 The batch is reconciled deterministically by engine/reconciler.py: a 55-record batch
 returns in milliseconds and cannot fail on a rate limit, which is what the workspace
@@ -9,7 +9,7 @@ asked for, so a demo never waits on 55 sequential model calls.
 from datetime import datetime
 from typing import Any
 
-from config import API_KEY
+from config import API_KEY, model
 from data.generator import BATCH_DATE
 from data.schemas import DiscrepancyCause, RecordStatus
 from engine import reconciler
@@ -111,12 +111,109 @@ async def reconcile_single_live(record_id: str, limit: int | None = None) -> dic
     }
 
 
-def answer_query(query: str, report: dict[str, Any]) -> str:
-    """Answer a question about the batch from the reconciled figures alone.
+def answer_query(query: str, report: dict[str, Any], history: list[dict] | None = None) -> dict:
+    """Answer a question about the batch. Returns {text, cards?, table?, records?}.
 
-    Keyword routing over the summary, not a model call: every number quoted here is one
-    the deterministic engine computed.
+    Falls back to keyword routing if the model is not configured or errors out.
+    History is [{role, content}] — used to give the model session memory.
     """
+    if provider_ready():
+        try:
+            return _answer_with_llm(query, report, history or [])
+        except Exception:
+            pass  # fall through to keyword fallback
+
+    return _answer_keyword(query, report)
+
+
+def _answer_with_llm(query: str, report: dict[str, Any], history: list[dict]) -> dict:
+    """LLM answer with optional structured payload for the frontend to render."""
+    from agno.models.message import Message
+
+    records = report["records"]
+    summary = report["summary"]
+
+    # Build compact record table — each line has everything needed for specific answers
+    record_lines = []
+    for r in records:
+        diff = ""
+        if r.get("actual_amount_paise") is not None:
+            d = r["actual_amount_paise"] - r["expected_amount_paise"]
+            diff = f" diff=₹{d/100:+.2f}"
+        record_lines.append(
+            f"{r['record_id']} | {r['business_type']} | "
+            f"expected=₹{r['expected_amount_paise']/100:.2f} "
+            f"settled={'₹'+str(round(r['actual_amount_paise']/100,2)) if r.get('actual_amount_paise') is not None else 'nil'}"
+            f"{diff} | {r['status']} | cause={r['primary_cause']} | expl={r.get('explanation','')[:120]}"
+        )
+    batch_ctx = "\n".join(record_lines)
+
+    needs_attention = [r for r in records if r["status"] == "unresolved" or r["primary_cause"] == "dispute_hold"]
+    unresolved_ctx = "\n".join(
+        f"  {r['record_id']}: expected=₹{r['expected_amount_paise']/100:.2f}, "
+        f"settled={'₹'+str(round(r['actual_amount_paise']/100,2)) if r.get('actual_amount_paise') is not None else 'nil'}, "
+        f"cause={r['primary_cause']}, note={r.get('explanation','')[:100]}"
+        for r in needs_attention
+    )
+
+    system_prompt = f"""You are Reya — a sharp personal accountant who has just finished running a Razorpay settlement reconciliation for this merchant. You know every number, every gap, every cause. You talk like a trusted advisor: direct, specific, warm. Never robotic.
+
+RULES:
+1. Always answer the SPECIFIC question. Do not give a generic batch summary unless they asked for one.
+2. Quote real record IDs, real rupee amounts, real causes. Never say "some records" when you have names.
+3. If the answer involves a list of records, include a JSON payload after your prose using this EXACT format:
+   |||JSON|||
+   {{"type": "records", "rows": [{{"id": "ORD-1000", "status": "unresolved", "expected": 3541.00, "settled": 2832.40, "diff": -708.60, "cause": "mdr_fee", "explanation": "short explanation"}}]}}
+   |||END|||
+4. For single-record deep dives, include:
+   |||JSON|||
+   {{"type": "record_detail", "record_id": "ORD-1000", "status": "explained", "expected": 3541.00, "settled": 2832.40, "diff": -708.60, "cause": "mdr_fee", "confidence": 0.95, "explanation": "full explanation"}}
+   |||END|||
+5. For batch summaries, include:
+   |||JSON|||
+   {{"type": "summary", "matched": {summary['matched_records']}, "explained": {summary['explained_records']}, "in_transit": {summary['in_transit_records']}, "unresolved": {summary['unresolved_records']}, "needs_attention": {summary['needs_attention']}}}
+   |||END|||
+6. If someone says hi / asks your name / makes small talk — respond naturally, no JSON.
+7. NEVER include JSON unless the answer genuinely benefits from it.
+
+BATCH CONTEXT — {summary['total_records']} records, settlement date 24 Aug 2026:
+Matched: {summary['matched_records']} | Explained: {summary['explained_records']} | In transit: {summary['in_transit_records']} | Unresolved: {summary['unresolved_records']} | Needs attention: {summary['needs_attention']}
+
+Records needing attention ({len(needs_attention)}):
+{unresolved_ctx or "  None"}
+
+Full record detail:
+{batch_ctx}"""
+
+    messages = [Message(role="system", content=system_prompt)]
+    for turn in history:
+        role = turn.get("role", "user")
+        content = turn.get("content", "")
+        if role in ("user", "assistant") and content:
+            messages.append(Message(role=role, content=content))
+    messages.append(Message(role="user", content=query))
+
+    response = model.response(messages)
+    raw = (response.content or "").strip()
+
+    # Parse out the optional JSON payload
+    import re
+    json_match = re.search(r"\|\|\|JSON\|\|\|\s*(.*?)\s*\|\|\|END\|\|\|", raw, re.DOTALL)
+    text = re.sub(r"\|\|\|JSON\|\|\|.*?\|\|\|END\|\|\|", "", raw, flags=re.DOTALL).strip()
+
+    payload: dict[str, Any] = {"text": text}
+    if json_match:
+        import json as _json
+        try:
+            payload["ui"] = _json.loads(json_match.group(1))
+        except Exception:
+            pass
+
+    return payload
+
+
+def _answer_keyword(query: str, report: dict[str, Any]) -> dict:
+    """Keyword-routing fallback — returns same {text, ui?} shape."""
     records = report["records"]
     summary = report["summary"]
     asked = query.lower()
@@ -125,42 +222,55 @@ def answer_query(query: str, report: dict[str, Any]) -> str:
         names = ", ".join(row["record_id"] for row in rows[:5])
         return f"{names} (and {len(rows) - 5} more)" if len(rows) > 5 else names or "none"
 
-    if any(word in asked for word in ("attention", "risk", "urgent", "chase", "wrong")):
-        flagged = [
-            r for r in records
-            if r["primary_cause"] in (DiscrepancyCause.DISPUTE_HOLD.value, DiscrepancyCause.UNRESOLVED.value)
-        ]
+    if any(word in asked for word in ("attention", "risk", "urgent", "chase", "wrong", "review", "human")):
+        flagged = [r for r in records if r["primary_cause"] in (DiscrepancyCause.DISPUTE_HOLD.value, DiscrepancyCause.UNRESOLVED.value)]
         if not flagged:
-            return "Nothing in this batch needs chasing: every record either reconciles or is explained."
-        return (
-            f"{len(flagged)} of {summary['total_records']} records need attention — "
-            f"{listed(flagged)}. These are held disputes and residuals that match no known cause."
-        )
+            return {"text": "Nothing needs chasing right now — every record either reconciles cleanly or is explained by a known deduction."}
+        text = (f"{len(flagged)} of {summary['total_records']} records need a human: "
+                f"{listed(flagged)}. These have residuals that match no known fee or tax rate.")
+        ui = {"type": "records", "rows": [
+            {"id": r["record_id"], "status": r["status"],
+             "expected": r["expected_amount_paise"] / 100,
+             "settled": r["actual_amount_paise"] / 100 if r.get("actual_amount_paise") else None,
+             "diff": (r["actual_amount_paise"] - r["expected_amount_paise"]) / 100 if r.get("actual_amount_paise") else None,
+             "cause": r["primary_cause"], "explanation": r.get("explanation", "")}
+            for r in flagged
+        ]}
+        return {"text": text, "ui": ui}
 
-    if any(word in asked for word in ("unresolved", "unexplained", "cannot explain")):
+    if any(word in asked for word in ("unresolved", "unexplained")):
         rows = [r for r in records if r["status"] == RecordStatus.UNRESOLVED.value]
-        return (
-            f"{len(rows)} records are unresolved: {listed(rows)}. Each has a residual that "
-            f"matches no fee, tax or statutory rate, so it is flagged rather than guessed at."
-        )
+        text = f"{len(rows)} unresolved: {listed(rows)}. Each has a residual matching no fee, tax or statutory rate."
+        return {"text": text, "ui": {"type": "records", "rows": [
+            {"id": r["record_id"], "status": r["status"],
+             "expected": r["expected_amount_paise"] / 100,
+             "settled": r["actual_amount_paise"] / 100 if r.get("actual_amount_paise") else None,
+             "diff": (r["actual_amount_paise"] - r["expected_amount_paise"]) / 100 if r.get("actual_amount_paise") else None,
+             "cause": r["primary_cause"], "explanation": r.get("explanation", "")}
+            for r in rows
+        ]}}
 
-    if any(word in asked for word in ("transit", "waiting", "late", "pending", "not arrived")):
+    if any(word in asked for word in ("transit", "waiting", "pending")):
         rows = [r for r in records if r["status"] == RecordStatus.IN_TRANSIT.value]
-        return (
-            f"{len(rows)} records have no settlement yet and are still inside the T+2 window: "
-            f"{listed(rows)}. No action needed on these."
-        )
+        return {"text": f"{len(rows)} records still inside the T+2 window: {listed(rows)}. No action needed."}
 
-    if any(word in asked for word in ("fee", "mdr", "gst", "tds", "tax", "refund", "fx", "rounding")):
-        causes = ", ".join(f"{cause} ({count})" for cause, count in summary["exception_categories"].items())
-        return f"Causes found in this batch, excluding records that reconcile cleanly: {causes or 'none'}."
+    if any(word in asked for word in ("summary", "overview", "batch", "total", "how many")):
+        return {"text": (
+            f"Batch of {summary['total_records']} records: "
+            f"{summary['matched_records']} matched, {summary['explained_records']} explained, "
+            f"{summary['in_transit_records']} in transit, {summary['unresolved_records']} unresolved. "
+            f"{summary['needs_attention']} need attention."
+        ), "ui": {"type": "summary", "matched": summary['matched_records'],
+                  "explained": summary['explained_records'],
+                  "in_transit": summary['in_transit_records'],
+                  "unresolved": summary['unresolved_records'],
+                  "needs_attention": summary['needs_attention']}}
 
-    return (
+    return {"text": (
         f"{summary['total_records']} records reconciled: {summary['matched_records']} match outright, "
-        f"{summary['explained_records']} are explained by a known deduction, "
-        f"{summary['in_transit_records']} are still in transit and "
-        f"{summary['unresolved_records']} are unresolved. {summary['needs_attention']} need attention."
-    )
+        f"{summary['explained_records']} explained by deduction, "
+        f"{summary['in_transit_records']} in transit, {summary['unresolved_records']} unresolved."
+    )}
 
 
 if __name__ == "__main__":
