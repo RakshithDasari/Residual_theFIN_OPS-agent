@@ -15,10 +15,6 @@ export default function AgentStream({ report, records, loading, errorText }) {
   const total = pipeline.length + transcript.length
 
   useEffect(() => {
-    setStage(0)
-  }, [total])
-
-  useEffect(() => {
     if (!total || stage >= total) return
     const timer = setTimeout(() => setStage((value) => value + 1), STAGE_MS)
     return () => clearTimeout(timer)
@@ -85,7 +81,7 @@ export default function AgentStream({ report, records, loading, errorText }) {
       </section>
 
       <aside className="stream-side">
-        <section className="panel side-card">
+        <section className="panel stream-card">
           <div className="panel-header">
             <h3>This batch</h3>
             <span>{summary.total_records ?? 0} records</span>
@@ -101,7 +97,7 @@ export default function AgentStream({ report, records, loading, errorText }) {
           <div className="batch-stat-row"><span>Needs attention</span><strong className="rust-text">{summary.needs_attention ?? 0}</strong></div>
         </section>
 
-        <section className="panel side-card">
+        <section className="panel stream-card">
           <div className="panel-header">
             <h3>Causes found</h3>
             <span>excluding clean records</span>
@@ -117,7 +113,7 @@ export default function AgentStream({ report, records, loading, errorText }) {
           )}
         </section>
 
-        <section className="panel side-card">
+        <section className="panel stream-card">
           <div className="panel-header"><h3>Needs a person</h3></div>
           {records.filter((record) => record.status === 'unresolved' || record.primary_cause === 'dispute_hold').slice(0, 4).map((record) => (
             <button type="button" className="attention-item" key={record.record_id} onClick={() => setOpenId(record.record_id)}>

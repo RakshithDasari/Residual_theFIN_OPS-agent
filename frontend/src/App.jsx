@@ -75,7 +75,17 @@ function DashboardShell() {
         <Routes>
           <Route
             index
-            element={<AgentStream report={report} records={records} loading={loading} errorText={errorText} />}
+            element={
+              // Remounting when the batch arrives restarts the playback from stage one
+              // without an effect that resets state.
+              <AgentStream
+                key={records.length}
+                report={report}
+                records={records}
+                loading={loading}
+                errorText={errorText}
+              />
+            }
           />
           <Route
             path="records"

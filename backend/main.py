@@ -18,7 +18,9 @@ from config import MODEL_ID
 
 FRONTEND_ORIGINS = [
     origin.strip()
-    for origin in (os.getenv("FRONTEND_ORIGIN") or "http://localhost:4173").split(",")
+    for origin in (
+        os.getenv("FRONTEND_ORIGIN") or "http://localhost:5173,http://localhost:4173"
+    ).split(",")
     if origin.strip()
 ]
 
