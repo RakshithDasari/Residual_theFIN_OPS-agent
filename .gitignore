@@ -1,13 +1,18 @@
 .env
+.env.*
 __pycache__/
 *.py[cod]
 .venv/
 venv/
 .pytest_cache/
 .DS_Store
-PROJECT_STORY.md
 
-# Local evaluation outputs.
+# Narrative / notes — not for the repo
+PROJECT_STORY.md
+NOTES.md
+CLAUDE.md
+
+# Local evaluation outputs
 evaluation/hf_probe.json
 evaluation/hf_focus.json
 evaluation/final_live_run.json
@@ -16,3 +21,4 @@ evaluation/final_evaluation_results.json
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+frontend/dist/

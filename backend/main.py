@@ -44,6 +44,7 @@ app.add_middleware(
 class QueryRequest(BaseModel):
     query: str = Field(..., min_length=1)
     limit: int | None = Field(default=None, gt=0)
+    history: list[dict] | None = Field(default=None, description="Prior conversation turns [{role, content}]")
 
 
 @app.get("/health")
@@ -99,9 +100,12 @@ async def record_get(
 @app.post("/query")
 def query(payload: QueryRequest) -> dict:
     batch_result = reconcile_batch_deterministic(payload.limit)
+    answer = answer_query(payload.query, batch_result["report"], payload.history)
+    # answer_query now returns {text, ui?} — pass it all through
     return {
         "status": "ok",
-        "answer": answer_query(payload.query, batch_result["report"]),
+        "answer": answer.get("text", ""),
+        "ui": answer.get("ui"),
         "summary": batch_result["report"]["summary"],
     }
 

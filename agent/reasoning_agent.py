@@ -308,8 +308,8 @@ if __name__ == "__main__":
     assert len(reconciliation_agent.tools) == 4
     assert reconciliation_agent.tool_call_limit == MAX_TOOL_CALLS
 
-    # Groq rejects a call that omits a required property, and this model routinely sends
-    # no arguments, so an empty `required` is what keeps the run alive.
+    # A strict validator rejects a call that omits a required property, and this model
+    # routinely sends no arguments, so an empty `required` is what keeps the run alive.
     for registered in reconciliation_agent.tools:
         registered.process_entrypoint()
         assert not registered.parameters["required"], f"{registered.name} requires an argument"
