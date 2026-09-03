@@ -31,11 +31,11 @@ export default function AgentStream({ report, records, loading, errorText }) {
       <section className="stream-main">
         <div className="stream-head">
           <div>
-            <p className="eyebrow">Autonomous run · settlement date 24 Aug 2026</p>
-            <h2>Reconciliation stream</h2>
+            <p className="eyebrow">Batch inference complete · settlement date 24 Aug 2026</p>
+            <h2>Reconciliation run</h2>
           </div>
           <span className={`live-chip ${running ? 'pulsing' : ''}`}>
-            {loading ? 'Loading batch' : running ? 'Replaying run' : 'Run complete'}
+            {loading ? 'Loading batch' : running ? 'Replaying inference' : 'All records processed'}
           </span>
         </div>
 

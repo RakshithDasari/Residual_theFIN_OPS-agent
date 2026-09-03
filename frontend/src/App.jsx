@@ -3,12 +3,16 @@ import { BrowserRouter, Link, NavLink, Route, Routes } from 'react-router-dom'
 import './App.css'
 import { EMPTY_SUMMARY, fetchBatch } from './api'
 import AgentStream from './pages/AgentStream'
+import ChatPage from './pages/ChatPage'
 import LandingPage from './pages/LandingPage'
+import LedgerPage from './pages/LedgerPage'
 import RecordsPage from './pages/RecordsPage'
 
 const NAV_ITEMS = [
   { to: '', label: 'Reconciliation stream', icon: '▣' },
   { to: '/records', label: 'All records', icon: '▦' },
+  { to: '/chat', label: 'Ask the agent', icon: '▤' },
+  { to: '/ledger', label: 'Dual ledger', icon: '⊟' },
 ]
 
 function DashboardShell() {
@@ -90,6 +94,14 @@ function DashboardShell() {
           <Route
             path="records"
             element={<RecordsPage records={records} summary={summary} loading={loading} />}
+          />
+          <Route
+            path="chat"
+            element={<ChatPage />}
+          />
+          <Route
+            path="ledger"
+            element={<LedgerPage records={records} loading={loading} errorText={errorText} />}
           />
         </Routes>
       </main>
