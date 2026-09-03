@@ -50,19 +50,13 @@ The synthetic data mimics the structure of real Razorpay settlement exports and 
 
 **Reconciliation stream** — shows the five pipeline steps running in sequence (load, exact match, fuzzy match, arithmetic split, classify), then surfaces key findings as chat messages with links to the evidence for each flagged record.
 
-![Reconciliation stream showing pipeline steps and findings](docs/screenshot-stream.png)
-
 ---
 
 **Dual ledger** — merchant orders on the left, Razorpay settlements on the right. Hover either row to highlight its pair. Unmatched rows have a red marker. Click any row to open the engine's full explanation, breakdown, and reasoning trace in the right panel.
 
-![Dual ledger view with side-by-side reconciliation and detail panel open](docs/screenshot-ledger.png)
-
 ---
 
 **Ask the agent (Reya)** — type a question in plain English and get a specific answer backed by the actual batch numbers. Reya knows every record, every gap, and every cause. She'll tell you exactly which ones need your attention and why.
-
-![Chat interface showing Reya answering a question about flagged records](docs/screenshot-chat.png)
 
 ---
 
