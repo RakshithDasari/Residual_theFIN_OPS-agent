@@ -32,7 +32,22 @@ def batch_preview(limit: int | None = None) -> dict[str, Any]:
     }
 
 
-async def reconcile_single_service(record_id: str | None = None, limit: int | None = None) -> dict[str, Any]:
+def answer_query(query: str, report: dict[str, Any]) -> str:
+    """Return a concise batch answer for the user's question."""
+    records = report.get("records", [])
+    summary = report.get("summary", {})
+    risk_records = [record for record in records if record.get("status") in ("explained", "unresolved")]
+    if "risk" in query.lower() or "attention" in query.lower():
+        names = ", ".join(record["record_id"] for record in risk_records[:5]) or "none"
+        return f"{len(risk_records)} records need review. Highest-risk records in this view: {names}."
+    return (
+        f"This view contains {summary.get('total_records', len(records))} records, "
+        f"with {summary.get('needs_attention', len(risk_records))} needing attention. "
+        f"The current question was: {query}"
+    )
+
+
+async def reconcile_single_service(record_id: str | None = None, limit: int | None = None, query: str | None = None) -> dict[str, Any]:
     """Reconcile a single record from the synthetic batch if a live model is configured."""
     expected, settlements = load_batch(limit)
     target = next((record for record in expected if record.record_id == record_id), None)
@@ -52,11 +67,17 @@ async def reconcile_single_service(record_id: str | None = None, limit: int | No
             "preview": batch_preview(limit),
         }
 
-    result = await reconcile_record(target, settlements, BATCH_DATE)
-    return {"mode": "live", "status": "ok", "record": result.model_dump(mode="json")}
+    result = await reconcile_record(target, settlements, BATCH_DATE, query=query)
+    record_payload = result.model_dump(mode="json")
+    return {
+        "mode": "live",
+        "status": "ok",
+        "record": record_payload,
+        "answer": answer_query(query, build_report([result])) if query else None,
+    }
 
 
-async def reconcile_batch_service(limit: int | None = None) -> dict[str, Any]:
+async def reconcile_batch_service(limit: int | None = None, query: str | None = None) -> dict[str, Any]:
     """Run the batch reconciliation if the active provider is configured."""
     if limit is not None and limit <= 0:
         raise ValueError("limit must be greater than 0")
@@ -71,15 +92,17 @@ async def reconcile_batch_service(limit: int | None = None) -> dict[str, Any]:
 
     try:
         expected, settlements = load_batch(limit)
-        records = await reconcile_batch(expected, settlements, BATCH_DATE)
+        records = await reconcile_batch(expected, settlements, BATCH_DATE, query=query)
         truth = load_truth(limit)
         metrics = evaluate(records, truth)
+        report = build_report(records)
         return {
             "mode": "live",
             "status": "ok",
             "provider_failures": 0,
             "metrics": metrics,
-            "report": build_report(records),
+            "report": report,
+            "answer": answer_query(query, report) if query else None,
         }
     except Exception as exc:  # pragma: no cover - provider/runtime failure surfaces honestly
         return {

@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from backend.service import reconcile_batch_service, reconcile_single_service
+from backend.service import batch_preview, reconcile_batch_service, reconcile_single_service
 
 FRONTEND_ORIGINS = []
 for raw in (os.getenv("FRONTEND_ORIGIN") or "http://localhost:4173").split(","):
@@ -54,6 +54,12 @@ def health() -> dict:
     return {"status": "ok", "service": "backend"}
 
 
+@app.get("/preview")
+def preview(limit: int | None = None) -> dict:
+    ensure_positive_limit(limit)
+    return {"mode": "preview", "status": "ok", "preview": batch_preview(limit)}
+
+
 @app.get("/status")
 def status() -> dict:
     hf_token = os.getenv("HF_TOKEN")
@@ -94,11 +100,11 @@ async def query(payload: QueryRequest) -> dict:
         raise HTTPException(status_code=400, detail="query is required")
     ensure_positive_limit(payload.limit)
     if payload.record_id:
-        result = await reconcile_single_service(record_id=payload.record_id, limit=payload.limit)
+        result = await reconcile_single_service(record_id=payload.record_id, limit=payload.limit, query=payload.query)
         if result.get("status") == "not_found":
             raise HTTPException(status_code=404, detail=result["message"])
         return result
-    return await reconcile_batch_service(payload.limit)
+    return await reconcile_batch_service(payload.limit, query=payload.query)
 
 
 if __name__ == "__main__":

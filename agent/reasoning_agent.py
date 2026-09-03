@@ -231,10 +231,12 @@ def _unreadable(expected, trace) -> ReconciledRecord:
     )
 
 
-async def reconcile_record(expected, settlements, as_of) -> ReconciledRecord:
+async def reconcile_record(expected, settlements, as_of, query: str | None = None) -> ReconciledRecord:
     evidence, prepared_trace = prepare_evidence(expected, settlements, as_of)
     record = get_current_record()
     prompt = build_prompt(expected) + "\n\nDeterministic evidence already collected:\n" + "\n\n".join(evidence)
+    if query:
+        prompt += f"\n\nUser question to address in the explanation: {query}"
     try:
         if MODEL_EXPLANATION_TIMEOUT_SECONDS <= 0:
             raise TimeoutError("model explanation disabled")
@@ -247,9 +249,10 @@ async def reconcile_record(expected, settlements, as_of) -> ReconciledRecord:
         trace = prepared_trace
         diagnosis = None
     if diagnosis is None:
+        cause = classify_evidence(record)
         diagnosis = Diagnosis(
-            primary_cause=classify_evidence(record),
-            explanation="The reconciliation evidence was computed successfully, but the model did not return readable prose.",
+            primary_cause=cause,
+            explanation=f"The settlement evidence indicates {cause.value.replace('_', ' ')}. Review the trace for the matching and amount details before taking action.",
             confidence=0.95,
         )
 
@@ -268,7 +271,7 @@ async def reconcile_record(expected, settlements, as_of) -> ReconciledRecord:
     )
 
 
-async def reconcile_batch(expected_records, settlements, as_of, concurrency=CONCURRENCY):
+async def reconcile_batch(expected_records, settlements, as_of, concurrency=CONCURRENCY, query: str | None = None):
     if concurrency != 1:
         raise ValueError("This agent must run at concurrency=1 to keep records isolated.")
 
@@ -276,7 +279,7 @@ async def reconcile_batch(expected_records, settlements, as_of, concurrency=CONC
     for index, record in enumerate(expected_records):
         if index > 0:
             await asyncio.sleep(RECORD_GAP_SECONDS)
-        results.append(await reconcile_record(record, settlements, as_of))
+        results.append(await reconcile_record(record, settlements, as_of, query=query))
     return results
 
 
