@@ -1,6 +1,17 @@
 # Residual — Settlement Reconciliation Agent
 
-> Live: **[residual-thefin-ops-agent-ljb9.onrender.com](https://residual-thefin-ops-agent-ljb9.onrender.com)**
+---
+
+**TL;DR**
+- Merchant ledger + Razorpay settlements go in. Every discrepancy comes out classified, explained in plain English, and confidence-scored — in under 50ms for 55 records.
+- A deterministic engine does the matching and arithmetic (100% accurate on this batch). An LLM writes the explanation. Neither substitutes for the other.
+- Live: **[residual-thefin-ops-agent-ljb9.onrender.com](https://residual-thefin-ops-agent-ljb9.onrender.com)**
+
+```bash
+# Run locally in two commands
+uvicorn backend.main:app --port 8001
+npm run dev --prefix frontend
+```
 
 ---
 
@@ -8,9 +19,7 @@
 
 Every merchant using Razorpay has two ledgers that should agree with each other. One is their own order system — what they *expected* to receive. The other is Razorpay's settlement report — what was *actually transferred*. In practice these two numbers almost never match, because Razorpay deducts processing fees, GST on those fees, TDS under section 194-O, and occasionally holds amounts for disputes or FX conversion.
 
-Reconciling these two ledgers manually — at scale, across thousands of orders, every settlement cycle — is genuinely tedious and error-prone. A finance team member has to open two spreadsheets, match rows by UTR reference, compute whether the difference is explained by a known deduction, and decide which ones need escalation. The goal of this project is to automate that entirely: match the records, explain the gaps with evidence, and surface only the ones that actually need a human.
-
-That's Residual. It takes both ledgers, reconciles them, explains every discrepancy in plain English, and gives the finance team a clear picture of what's clean, what's explainable, and what actually needs attention.
+Reconciling these manually — at scale, across thousands of orders, every settlement cycle — is genuinely tedious. A finance team member has to open two spreadsheets, match rows by UTR reference, compute whether the difference is explained by a known deduction, and decide which ones need escalation. The goal of this project is to automate that entirely: match the records, explain the gaps with evidence, and surface only the ones that actually need a human.
 
 ---
 
@@ -33,333 +42,212 @@ The MVP reconciles a batch of 55 synthetic records across three business types (
 
 The synthetic data mimics the structure of real Razorpay settlement exports and merchant order records exactly — same fields, same arithmetic, same edge cases. Swapping it for a real data feed requires changing two functions, not the architecture.
 
+**A note on the accuracy numbers:** The 100% figures are measured against synthetic data I generated myself, with the answer labels held out from the engine during evaluation. The honest next step is scoring against an independently built holdout set, or real anonymised data — that hasn't happened yet.
+
+![Dual ledger view showing merchant and settlement panels side by side](docs/screenshot-ledger.png)
+
+> *Drop a screenshot of the dual-ledger or chat view here — one image does more work than a paragraph.*
+
 ---
 
 ## How this works in production (where there's no synthetic data)
 
 In a real deployment, Residual sits between two live data sources:
 
-```
-Merchant order system  ──────────────────────────────────────┐
-  (webhook or API pull)                                        │
-  POST /ingest/expected                                        ▼
-                                              ┌─────────────────────────┐
-                                              │   Residual backend       │
-                                              │                          │
-  Razorpay settlement API  ─────────────────►│   reconcile + explain    │
-  (webhook or polling via                     │                          │
-  /v1/settlements + /recon)                   └─────────────────────────┘
-  POST /ingest/settlements                               │
-                                                         ▼
-                                              Dashboard / CSV / Chat
+```mermaid
+flowchart LR
+    A[Merchant order system\nwebhook / API pull] -->|POST /ingest/expected| B[Residual backend]
+    C[Razorpay settlement API\n/v1/settlements + /recon] -->|POST /ingest/settlements| B
+    B --> D[Dashboard / CSV / Chat]
 ```
 
-The merchant's order system would push expected records to a `/ingest/expected` endpoint — either via webhook on order creation or a periodic API pull. Razorpay's settlement webhooks (or the `/v1/settlements` + `/v1/settlements/{id}/recon` APIs) would feed the actual settlement side to `/ingest/settlements`.
+The merchant's order system pushes expected records via webhook on order creation or a periodic pull. Razorpay's settlement webhooks (or `/v1/settlements` + `/v1/settlements/{id}/recon`) feed the actual settlement side.
 
 In the MVP, since we don't have live access to either, those two endpoints are replaced by two JSON files: `data/synthetic_batch.json` holds both sides of the ledger in the exact same schema the real endpoints would produce. The reconciliation engine, the agent, and the entire API are production-ready — the only thing that changes between the MVP and a real deployment is where the data comes from.
 
-The engine itself is stateless and batch-shaped by design. In production you'd run it on a schedule (every settlement cycle, typically T+2) or trigger it on incoming webhook events. The results would be stored in a database rather than recomputed from JSON on every request.
+In production, the engine runs on a schedule (every settlement cycle, typically T+2) or triggers on incoming webhooks. Results are stored in a database rather than recomputed from JSON on every request.
 
 ---
 
 ## The reconciliation pipeline
 
-Here's what actually happens when a batch runs:
-
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│                      RECONCILIATION PIPELINE                         │
-│                                                                      │
-│  ExpectedRecord[]          SettlementRecord[]                        │
-│  (merchant ledger)         (Razorpay ledger)                         │
-│        │                         │                                   │
-│        └──────────┬──────────────┘                                   │
-│                   ▼                                                  │
-│         ┌─────────────────┐                                          │
-│         │  try_exact_match │  UTR == reference_hint?                 │
-│         └────────┬────────┘                                          │
-│            found │         not found                                 │
-│                  │              ▼                                    │
-│                  │   ┌──────────────────┐                            │
-│                  │   │  try_fuzzy_match  │  truncation or            │
-│                  │   └────────┬─────────┘  ≤2 char edits?           │
-│                  │       found│    not found                         │
-│                  │            │         ▼                            │
-│                  │            │   ┌──────────────────────┐           │
-│                  │            │   │ days_awaiting_settle  │           │
-│                  │            │   └──────────┬───────────┘           │
-│                  │            │              │                        │
-│                  │            │    ≤2d: IN_TRANSIT                   │
-│                  │            │    >2d: DISPUTE_HOLD                 │
-│                  ▼            ▼                                      │
-│         ┌───────────────────────────┐                                │
-│         │  check_arithmetic_causes  │                                │
-│         │                           │                                │
-│         │  residual = predicted_net │                                │
-│         │          - actual_settled │                                │
-│         └─────────────┬─────────────┘                               │
-│                       ▼                                              │
-│         ┌─────────────────────────────────────────┐                 │
-│         │           CLASSIFY                       │                 │
-│         │                                          │                 │
-│         │  residual == 0          → MDR_FEE        │                 │
-│         │  residual ≈ -fees       → GST_ON_FEE     │                 │
-│         │  residual ≈ gross×1%    → TDS            │                 │
-│         │  residual ≈ gross×3%    → FX_MARKUP      │                 │
-│         │  |residual| ≤ 2 paise   → ROUNDING_DRIFT │                 │
-│         │  residual ≥ 10% gross   → PARTIAL_REFUND │                 │
-│         │  else                   → UNRESOLVED     │                 │
-│         └─────────────┬───────────────────────────┘                 │
-│                       ▼                                              │
-│              ReconciledRecord                                        │
-│              {cause, confidence, explanation, trace}                 │
-└──────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A[ExpectedRecord + SettlementRecord list] --> B{try_exact_match\nUTR == reference_hint?}
+    B -->|found| E[check_arithmetic_causes]
+    B -->|not found| C{try_fuzzy_match\ntruncation or ≤2 edits?}
+    C -->|found| E
+    C -->|not found| D[days_awaiting_settlement]
+    D -->|≤ 2 days| D1[IN_TRANSIT]
+    D -->|> 2 days| D2[DISPUTE_HOLD]
+    E --> F{classify}
+    F -->|residual == 0| G1[MDR_FEE · 0.99]
+    F -->|residual ≈ −fees| G2[GST_ON_FEE · 0.97]
+    F -->|residual ≈ gross×1%| G3[TDS · 0.95]
+    F -->|residual ≈ gross×3%| G4[FX_MARKUP · 0.95]
+    F -->|abs ≤ 2 paise| G5[ROUNDING_DRIFT · 0.92]
+    F -->|≥ 10% of gross| G6[PARTIAL_REFUND · 0.78]
+    F -->|none match| G7[UNRESOLVED · 0.40]
+    G1 & G2 & G3 & G4 & G5 & G6 & G7 --> H[ReconciledRecord\ncause · confidence · explanation · trace]
 ```
 
-This runs in milliseconds for 55 records. No model is consulted here. The explanation text is generated by `reporting/narrative.py` — plain template-based prose per cause, fast and reliable. The LLM is an optional layer on top that rewrites this into something more conversational.
+This runs in under 50ms for 55 records. No model is consulted. Explanation text comes from `reporting/narrative.py` — a plain template per cause, fast and reliable. The LLM is an optional layer on top.
 
 ---
 
 ## The agentic architecture
 
-The LLM agent runs one record at a time, on demand — either when `/record/{id}?live=true` is called, or when the chat agent needs to explain something in detail.
+The LLM agent runs one record at a time, on demand — either via `/record/{id}?live=true` or when the chat needs a detailed explanation.
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      AGENT ARCHITECTURE                              │
-│                                                                      │
-│  ExpectedRecord + Settlements                                        │
-│          │                                                           │
-│          ▼                                                           │
-│  ┌───────────────────┐                                               │
-│  │  prepare_evidence  │  ← deterministic pre-pass                    │
-│  │                   │    runs all 4 tools before                    │
-│  │  try_exact_match  │    the model is consulted                     │
-│  │  try_fuzzy_match  │                                               │
-│  │  check_arithmetic │                                               │
-│  │  days_awaiting    │                                               │
-│  └────────┬──────────┘                                               │
-│           │  evidence strings + trace steps                          │
-│           ▼                                                          │
-│  ┌─────────────────────────────────────────────┐                    │
-│  │  PROMPT                                      │                    │
-│  │                                              │                    │
-│  │  "Reconcile this record.                     │                    │
-│  │   {record fields}                            │                    │
-│  │                                              │                    │
-│  │   Deterministic evidence already collected:  │                    │
-│  │   {exact match result}                       │                    │
-│  │   {arithmetic breakdown}                     │                    │
-│  │   {days awaiting}                            │                    │
-│  │                                              │                    │
-│  │   Taxonomy: [10 causes with signatures]      │                    │
-│  │   Write: primary_cause / explanation /       │                    │
-│  │          contributing_causes / confidence"   │                    │
-│  └────────┬────────────────────────────────────┘                    │
-│           │                                                          │
-│           ▼                                                          │
-│  ┌─────────────────────────────────────────────┐                    │
-│  │  GLM-5.3-Flash (via HuggingFace router)      │                    │
-│  │  temperature=0, top_p=0.95                   │                    │
-│  │  tool_call_limit=6                           │                    │
-│  └────────┬────────────────────────────────────┘                    │
-│           │  4-line labelled response                                │
-│           ▼                                                          │
-│  ┌─────────────────────────────────────────────┐                    │
-│  │  parse_diagnosis()                           │                    │
-│  │                                              │                    │
-│  │  tries: labelled lines                       │                    │
-│  │         labelled lines with **bold**         │                    │
-│  │         fenced JSON                          │                    │
-│  │         bare JSON                            │                    │
-│  └────────┬────────────────────────────────────┘                    │
-│           │                                                          │
-│           ▼                                                          │
-│  ┌─────────────────────────────────────────────┐                    │
-│  │  primary_cause  ← classify_evidence()        │ ← ALWAYS           │
-│  │                   (deterministic)            │   deterministic    │
-│  │  explanation    ← model output               │                    │
-│  │  confidence     ← model output               │                    │
-│  │                                              │                    │
-│  │  if parse fails → template explanation       │                    │
-│  └──────────────────────────────────────────────┘                   │
-│                                                                      │
-│  KEY DESIGN DECISION:                                                │
-│  The model NEVER sets primary_cause. classify_evidence() does.      │
-│  A bad model response can only affect the explanation text,         │
-│  not the classification or the accuracy metrics.                    │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A[ExpectedRecord + Settlements] --> B[prepare_evidence\ndeterministic pre-pass]
+    B -->|calls| T1[try_exact_match]
+    B -->|calls| T2[try_fuzzy_match]
+    B -->|calls| T3[check_arithmetic_causes]
+    B -->|calls| T4[days_awaiting_settlement]
+    T1 & T2 & T3 & T4 --> C[evidence strings + trace steps]
+    C --> D[Build prompt\nrecord fields + evidence + 10-cause taxonomy]
+    D --> E[GLM-5.3-Flash\ntemp=0 · top_p=0.95 · tool_limit=6]
+    E --> F[parse_diagnosis\ntries: labelled lines → bold lines → fenced JSON → bare JSON]
+    F -->|parse ok| G[model explanation + confidence]
+    F -->|parse fails| H[template fallback explanation]
+    G & H --> I[ReconciledRecord]
+    J[classify_evidence — always deterministic] -->|primary_cause| I
+
+    style J fill:#1f3a5f,color:#fff
+    style I fill:#1f3a5f,color:#fff
 ```
 
-Why this design? The first version let the model do everything — choose which tools to call, run its own arithmetic, name the cause. It reached 45.5% pairing accuracy and 36.4% diagnosis accuracy. Terrible. The core problem was that the model was being asked to do things it's not reliable at (arithmetic, structured classification) when those things are trivially correct as code. Once the architecture separated "gathering evidence" (code) from "explaining evidence" (model), accuracy hit 100%.
+**The key design decision:** `primary_cause` is always set by `classify_evidence()` — the same deterministic code as the batch engine. The model writes the explanation; it never sets the cause. A bad model response can degrade explanation quality but cannot change the classification or the accuracy metrics.
+
+**Why this matters:** The first version let the model do everything. It reached 45.5% pairing accuracy and 36.4% diagnosis accuracy. Once the architecture separated "gathering evidence" (code) from "explaining evidence" (model), accuracy hit 100%.
 
 ---
 
 ## The chat agent ("Reya")
 
-The `/query` endpoint powers a conversational layer on top of the batch. The model receives the full reconciled batch as context (one line per record: id, type, expected, settled, diff, status, cause, explanation) plus the conversation history, and answers as "Reya" — a personal accountant who has already seen all the numbers.
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as ChatPage
+    participant BE as POST /query
+    participant E as reconciler
+    participant M as GLM-5.3-Flash
 
-```
-┌────────────────────────────────────────────────────────────┐
-│                   CHAT ARCHITECTURE                         │
-│                                                             │
-│  User: "why didn't ORD-1000 settle in full?"               │
-│          │                                                  │
-│          ▼                                                  │
-│  POST /query                                                │
-│  { query, history: [{role, content}, ...] }                │
-│          │                                                  │
-│          ▼                                                  │
-│  reconcile_batch_deterministic()   ← full batch runs first  │
-│  (55 records, <50ms)                                        │
-│          │                                                  │
-│          ▼                                                  │
-│  System prompt:                                             │
-│  - "You are Reya, a personal accountant..."                 │
-│  - Full batch summary (matched/explained/unresolved)        │
-│  - All 55 records as compact table                          │
-│  - Records needing attention highlighted                    │
-│  - Rules for when to emit structured JSON payloads          │
-│          │                                                  │
-│  + History of prior turns (memory across session)          │
-│  + Current user question                                    │
-│          │                                                  │
-│          ▼                                                  │
-│  GLM-5.3-Flash response                                     │
-│          │                                                  │
-│          ▼                                                  │
-│  Parse |||JSON|||...|||END||| blocks (optional)             │
-│  → type: "records"      → records table in UI              │
-│  → type: "summary"      → KPI strip in UI                  │
-│  → type: "record_detail"→ detail card in UI                │
-│          │                                                  │
-│          ▼                                                  │
-│  { answer: text, ui: {type, rows/data} }                   │
-│          │                                                  │
-│          ▼                                                  │
-│  Chat bubble + rendered UI element                          │
-└────────────────────────────────────────────────────────────┘
+    U->>FE: types question + hits Send
+    FE->>BE: {query, history: [{role,content},...]}
+    BE->>E: reconcile_batch_deterministic()
+    E-->>BE: 55 reconciled records (<50ms)
+    BE->>M: system prompt (Reya persona + full batch context)\n+ conversation history + user question
+    M-->>BE: prose answer + optional |||JSON|||...|||END||| block
+    BE-->>FE: {answer: text, ui: {type, rows}}
+    FE->>U: chat bubble + optional records table / KPI strip / detail card
 ```
 
-If the model is unavailable (no API key, rate limit, timeout), the system falls back to a keyword router that handles the most common questions ("attention", "unresolved", "transit", "summary") deterministically. The chat never just breaks.
+If the model is unavailable (no key, rate limit, timeout), a keyword router handles the most common questions deterministically. The chat never breaks.
 
 ---
 
 ## Full application architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        FULL SYSTEM ARCHITECTURE                          │
-│                                                                          │
-│   ┌──────────────────────────────────────────────────────────────────┐  │
-│   │                        FRONTEND (Vite + React)                    │  │
-│   │                   residual-thefin-ops-agent-ljb9.onrender.com     │  │
-│   │                                                                   │  │
-│   │   /              LandingPage    scroll-reveal, CountUp, Spotlight │  │
-│   │   /app           AgentStream    animated pipeline + transcript    │  │
-│   │   /app/records   RecordsPage    sortable/filterable table + CSV   │  │
-│   │   /app/chat      ChatPage       Reya chat agent, UI cards         │  │
-│   │   /app/ledger    LedgerPage     dual-panel side-by-side ledger    │  │
-│   │                                                                   │  │
-│   │   src/api.js  ──── all backend calls ──► VITE_API_URL             │  │
-│   └──────────────────────────────────────────────────────────────────┘  │
-│                              │                                           │
-│                              │ HTTP (CORS)                               │
-│                              ▼                                           │
-│   ┌──────────────────────────────────────────────────────────────────┐  │
-│   │                  BACKEND (FastAPI + uvicorn)                      │  │
-│   │               residual-thefin-ops-agent.onrender.com             │  │
-│   │                                                                   │  │
-│   │   GET  /health          liveness check                            │  │
-│   │   GET  /batch           deterministic reconciliation              │  │
-│   │   GET  /batch.csv       CSV export                                │  │
-│   │   GET  /record/{id}     single record (det. or live)             │  │
-│   │   POST /query           chat agent                                │  │
-│   │                                                                   │  │
-│   │   backend/service.py ──► engine/reconciler.py                    │  │
-│   │                      ──► agent/reasoning_agent.py (on demand)    │  │
-│   │                      ──► reporting/                              │  │
-│   │                      ──► evaluation/eval.py                      │  │
-│   └──────────────────────────────────────────────────────────────────┘  │
-│          │                          │                                    │
-│          │                          │ model.response()                   │
-│          ▼                          ▼                                    │
-│   ┌─────────────┐         ┌─────────────────────────┐                   │
-│   │ data/       │         │  HuggingFace router      │                   │
-│   │             │         │  router.huggingface.co   │                   │
-│   │ synthetic_  │         │  /v1 (OpenAI-compatible)  │                  │
-│   │ batch.json  │         │  zai-org/GLM-5.3-Flash   │                   │
-│   │ ground_     │         └─────────────────────────┘                   │
-│   │ truth.json  │                                                        │
-│   └─────────────┘                                                        │
-└─────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Frontend["Frontend — Render Static Site"]
+        LP[LandingPage /]
+        AS[AgentStream /app]
+        RP[RecordsPage /app/records]
+        CP[ChatPage /app/chat]
+        LD[LedgerPage /app/ledger]
+        API[src/api.js]
+    end
+
+    subgraph Backend["Backend — Render Web Service"]
+        MA[FastAPI routes\nmain.py]
+        SV[service.py]
+        EN[engine/reconciler.py]
+        AG[agent/reasoning_agent.py]
+        RE[reporting/]
+        EV[evaluation/eval.py]
+    end
+
+    subgraph Data["Data"]
+        SB[synthetic_batch.json\n55 expected + 48 settlements]
+        GT[ground_truth.json\nanswer key]
+    end
+
+    subgraph LLM["HuggingFace router"]
+        HF[zai-org/GLM-5.3-Flash\nOpenAI-compatible /v1]
+    end
+
+    API -->|VITE_API_URL| MA
+    MA --> SV
+    SV --> EN
+    SV -->|on demand| AG
+    SV --> RE
+    SV --> EV
+    EN --> SB
+    EV --> GT
+    AG --> HF
+    SV -->|/query| HF
 ```
 
 ---
 
-## Production architecture (no synthetic data)
+## Production architecture
 
-In production, the two JSON files are replaced by live data feeds:
+```mermaid
+flowchart LR
+    subgraph Sources["Live data sources"]
+        OE[Merchant ERP\norder created webhook]
+        RZ[Razorpay\n/v1/settlements + /recon\nor settlement webhook]
+    end
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                     PRODUCTION ARCHITECTURE                             │
-│                                                                         │
-│  Merchant ERP / Order System                                            │
-│  ┌──────────────────────┐                                               │
-│  │  Order created event  │──── webhook ────► POST /ingest/expected     │
-│  │  (id, amount, ref)    │                                              │
-│  └──────────────────────┘                                               │
-│                                                                         │
-│  Razorpay                                                               │
-│  ┌──────────────────────┐                                               │
-│  │  Settlement webhook   │──── webhook ────► POST /ingest/settlements  │
-│  │  OR                   │                                              │
-│  │  GET /v1/settlements  │◄─── polling ──── scheduler (T+2 cycle)      │
-│  │  GET /v1/settlements/ │                                              │
-│  │       {id}/recon      │                                              │
-│  └──────────────────────┘                                               │
-│                                │                                        │
-│                                ▼                                        │
-│                    ┌───────────────────────┐                            │
-│                    │  Database             │                            │
-│                    │  expected_records     │                            │
-│                    │  settlement_records   │                            │
-│                    │  reconciled_results   │                            │
-│                    └──────────┬────────────┘                           │
-│                               │                                         │
-│                               ▼                                         │
-│                    ┌───────────────────────┐                            │
-│                    │  Reconciliation engine │  ← same code, new        │
-│                    │  (same logic, load     │    data source            │
-│                    │   from DB not JSON)    │                            │
-│                    └──────────┬────────────┘                           │
-│                               │                                         │
-│                               ▼                                         │
-│              Dashboard / Alerts / CSV / Chat                            │
-└────────────────────────────────────────────────────────────────────────┘
+    subgraph Ingest["New ingest endpoints"]
+        IE[POST /ingest/expected]
+        IS[POST /ingest/settlements]
+    end
+
+    subgraph Core["Unchanged core"]
+        DB[(Database\nexpected · settlements\nreconciled results)]
+        EN[Reconciliation engine\nsame code]
+        AG[Agent + Chat\nsame code]
+    end
+
+    subgraph Out["Output"]
+        DA[Dashboard]
+        AL[Alerts / review queue]
+        CS[CSV export]
+        CH[Chat]
+    end
+
+    OE --> IE --> DB
+    RZ --> IS --> DB
+    DB --> EN --> DB
+    DB --> AG
+    EN --> DA & AL & CS
+    AG --> CH
 ```
 
-What stays the same: the entire reconciliation engine, the agent, the API, the frontend.
-What changes: `load_batch()` reads from a database instead of JSON. Two new ingest endpoints. A scheduler triggers reconciliation runs. Results are persisted rather than recomputed on every request.
+What stays the same: the entire reconciliation engine, agent, API, and frontend.
+What changes: `load_batch()` reads from a database instead of JSON. Two new ingest endpoints. A scheduler triggers reconciliation runs on a T+2 cycle.
 
 ---
 
 ## Challenges faced and how accuracy improved
 
-**The first version was a mess.** The initial architecture gave the model full autonomy — it decided which tools to call, in what order, whether to call them at all, and then named the cause itself. On 55 records: 45.5% pairing accuracy, 36.4% diagnosis accuracy. It felt confident and was mostly wrong.
+**The first version.** Full autonomy to the model — it chose which tools to call, ran its own arithmetic, and named the cause. 45.5% pairing, 36.4% diagnosis. Confident, fast, mostly wrong.
 
-**Two bugs the logs didn't show.** The HuggingFace router was rejecting a `developer` role that Agno was inserting into the message list (the router only accepts `system`, `user`, `assistant`). Agno's auto-generated tool JSON Schema included an invalid `additionalProperties: false` catch-all field that made strict validators reject every tool call silently. Neither of these raised an exception — the model just got bad input and returned garbage.
+**Two bugs the logs didn't surface.** The HuggingFace router rejected a `developer` role Agno was inserting (it only accepts `system`, `user`, `assistant`). Agno's auto-generated tool JSON Schema included an invalid `additionalProperties: false` field that made strict validators reject every tool call silently. Neither raised an exception — the model just received bad input and returned garbage.
 
-**The architectural fix.** The solution was to stop asking the model to do things code can do reliably. The reconciliation engine now gathers all evidence deterministically before the model is ever consulted. The model receives a prompt that already contains the matching result, the arithmetic breakdown, and the days-awaiting figure. Its job is exactly one thing: write a clear explanation. Cause classification, pairing, and arithmetic are always done by code. After this change: 100% pairing accuracy, 100% diagnosis accuracy.
+**The fix.** Stop asking the model to do things code does reliably. The engine now gathers all evidence deterministically before the model is consulted. The model receives a prompt with the matching result and arithmetic already computed. Its job is one thing: write a clear explanation. After this: 100% pairing, 100% diagnosis.
 
-**What this means for the agent design.** The model never sets `primary_cause` in the final output — `classify_evidence()` always does that. A bad model response can degrade the explanation quality but cannot change the cause classification or break the accuracy metrics. This is the key design decision: correctness is guaranteed by determinism; the model handles only communication.
-
-**Remaining limitations:**
-- The fuzzy matcher uses structural heuristics (prefix truncation + Levenshtein distance). Over millions of settlements with many same-day UTRs, two records could coincidentally be within edit distance 2 of each other — the amount would need to serve as a second signal.
-- The partial refund detection (≥10% of gross with no other explanation) is a heuristic. A real deployment would need the merchant's refund records as a third data source to confirm.
-- `UNRESOLVED` is the honest answer when no cause fits. There are 2 unresolved records in this batch. In production, these would be routed to a human review queue automatically.
+**Remaining honest limitations:**
+- Fuzzy matching uses prefix + Levenshtein heuristics. Over millions of same-day UTRs, the amount would need to serve as a second signal.
+- Partial refund detection (≥10% of gross, no other cause) is a heuristic. A real deployment needs the merchant's refund records as a third source to confirm.
+- 2 unresolved records in this batch. In production these route to a human review queue.
 - The chat agent re-runs the full batch on every `/query` call. In production this would be cached.
+- The 100% accuracy figures are on synthetic self-generated data. An independent holdout set is the obvious next step.
 
 ---
 
@@ -368,17 +256,16 @@ What changes: `load_batch()` reads from a database instead of JSON. Two new inge
 **Prerequisites:** Python 3.11+, Node 18+, a HuggingFace token.
 
 ```bash
-# Clone
 git clone https://github.com/RakshithDasari/Residual_theFIN_OPS-agent.git
 cd Residual_theFIN_OPS-agent
 
 # Backend
 cp .env.example .env
-# Edit .env and set HF_TOKEN=your_token
+# set HF_TOKEN in .env
 
 python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # Mac/Linux
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # Mac/Linux
 
 pip install -r requirements.txt
 uvicorn backend.main:app --port 8001
@@ -386,32 +273,25 @@ uvicorn backend.main:app --port 8001
 # Frontend (separate terminal)
 cd frontend
 npm install
-# Create frontend/.env.local with:
-# VITE_API_URL=http://localhost:8001
+echo "VITE_API_URL=http://localhost:8001" > .env.local
 npm run dev
 ```
 
-Open `http://localhost:5173`. Backend health check: `http://localhost:8001/health`.
+Open `http://localhost:5173`. Health check: `http://localhost:8001/health`.
 
-**To run the deterministic engine directly:**
 ```bash
-python -m engine.reconciler
-```
-
-**To run the evaluation:**
-```bash
-python -m evaluation.eval
+python -m engine.reconciler   # run deterministic engine directly
+python -m evaluation.eval     # run evaluation against ground truth
 ```
 
 ---
 
 ## Live deployment
 
-| Service | URL |
+| | URL |
 |---|---|
-| Frontend (Render Static Site) | https://residual-thefin-ops-agent-ljb9.onrender.com |
-| Backend (Render Web Service) | https://residual-thefin-ops-agent.onrender.com |
-| Backend health check | https://residual-thefin-ops-agent.onrender.com/health |
+| Frontend | https://residual-thefin-ops-agent-ljb9.onrender.com |
+| Backend health | https://residual-thefin-ops-agent.onrender.com/health |
 | Batch API | https://residual-thefin-ops-agent.onrender.com/batch |
 
 ---
@@ -420,67 +300,29 @@ python -m evaluation.eval
 
 ```
 .
-├── backend/
-│   ├── main.py          FastAPI routes and CORS config
-│   └── service.py       Service layer: batch, single record, chat agent
-│
-├── engine/
-│   ├── matcher.py       Exact match, fuzzy match, arithmetic evidence
-│   ├── reconciler.py    Deterministic batch reconciliation + classification
-│   └── razorpay_client.py  Live Razorpay API client (for production use)
-│
-├── agent/
-│   ├── reasoning_agent.py  LLM agent, evidence-first design, parse_diagnosis
-│   ├── tools.py            4 tool wrappers (read evidence via ContextVar)
-│   └── taxonomy.py         10-cause classification taxonomy
-│
-├── data/
-│   ├── schemas.py          Pydantic models for all record types
-│   ├── generator.py        Synthetic batch generator (seed=42)
-│   ├── synthetic_batch.json  55 expected + 48 settlements
-│   └── ground_truth.json   Answer key (never seen by the engine)
-│
-├── reporting/
-│   ├── narrative.py        Plain-English explanation templates per cause
-│   ├── report_builder.py   Summary stats computation
-│   └── csv_export.py       14-column CSV with CRLF (Excel-compatible)
-│
-├── evaluation/
-│   ├── eval.py             Scoring: pairing accuracy, diagnosis accuracy
-│   └── challenge_eval.py   20-record harder evaluation set
-│
-├── frontend/
-│   └── src/
-│       ├── api.js           All backend calls, formatters, constants
-│       ├── agentScript.js   Animated pipeline playback from real data
-│       ├── pages/
-│       │   ├── LandingPage.jsx
-│       │   ├── AgentStream.jsx   Animated reconciliation run
-│       │   ├── RecordsPage.jsx   Filterable/sortable table
-│       │   ├── ChatPage.jsx      Reya chat interface
-│       │   └── LedgerPage.jsx    Dual-panel ledger view
-│       └── components/
-│           ├── RecordDrawer.jsx  Full record detail + trace
-│           ├── BlurText.jsx      Scroll-reveal text animation
-│           ├── CountUp.jsx       Animated number counter
-│           └── SpotlightCard.jsx Cursor-tracking glow card
-│
-├── config.py        Model singleton, env var loading, paths
+├── backend/         FastAPI routes + service layer
+├── engine/          Deterministic matcher, reconciler, Razorpay client
+├── agent/           LLM agent, tools, 10-cause taxonomy
+├── data/            Schemas, synthetic batch, ground truth
+├── reporting/       Narrative templates, report builder, CSV export
+├── evaluation/      Accuracy scoring against held-back labels
+├── frontend/src/    React pages, api.js, animated components
+├── config.py        Model singleton, paths, env vars
 ├── context.py       ContextVar for per-record tool isolation
-├── requirements.txt Pinned Python dependencies
-└── render.yaml      Render deployment config
+├── requirements.txt Pinned deps
+└── render.yaml      Render deploy config
 ```
 
 ---
 
 ## Stack
 
-| Layer | Tech |
+| | |
 |---|---|
 | Backend | Python 3.11, FastAPI, uvicorn |
 | Agent framework | Agno 2.9.0 |
 | LLM | GLM-5.3-Flash via HuggingFace OpenAI-compatible router |
 | Fuzzy matching | rapidfuzz (Levenshtein) |
 | Frontend | React 19, Vite 8, React Router 7 |
-| Animations | motion/react (CountUp, BlurText) |
-| Deployment | Render (backend + frontend static site) |
+| Animations | motion/react |
+| Deployment | Render (web service + static site) |
