@@ -17,15 +17,17 @@ npm run dev --prefix frontend
 
 ## What is this and why does it exist
 
-Every merchant using Razorpay has two ledgers that should agree with each other. One is their own order system — what they *expected* to receive. The other is Razorpay's settlement report — what was *actually transferred*. In practice these two numbers almost never match, because Razorpay deducts processing fees, GST on those fees, TDS under section 194-O, and occasionally holds amounts for disputes or FX conversion.
+Payment reconciliation has two layers. The first is straightforward — exact UTR matches, standard fee deductions, records that reconcile cleanly with basic arithmetic. Deterministic systems handle this reliably and quickly. The second layer is the interesting one: a settlement is net of fees that weren't recorded on the merchant's side, a reference has been truncated or transposed in transit, a record hasn't arrived yet versus one that's been held for a dispute, or several pieces of evidence need to be considered together to understand what actually happened. These are the cases that conventional automation flags as exceptions and hands to a human.
 
-Reconciling these manually — at scale, across thousands of orders, every settlement cycle — is genuinely tedious. A finance team member has to open two spreadsheets, match rows by UTR reference, compute whether the difference is explained by a known deduction, and decide which ones need escalation. The goal of this project is to automate that entirely: match the records, explain the gaps with evidence, and surface only the ones that actually need a human.
+Residual explores what a reconciliation layer built specifically for those cases could look like. The approach is: establish everything that can be established by code first — matching, arithmetic, timing — then let an agent work only on what remains. The agent's job isn't to redo what the deterministic engine already got right. It's to inspect the evidence, reason across the pieces that don't fit neatly into a rule, and produce an explanation with the work shown.
+
+The goal isn't to replace the financial system of record with a language model. It's to build the layer that makes sense of the cases that conventional automation deliberately leaves behind.
 
 ---
 
 ## The idea in one paragraph
 
-A deterministic engine matches merchant orders to Razorpay settlements using UTR references, then arithmetically decomposes any gap into known causes (processing fee, GST, TDS, FX markup, partial refund, rounding). An LLM sits on top of this — not to do the math, but to explain the result in two sentences a finance team can read and act on. The deterministic layer handles correctness; the model handles communication. Neither substitutes for the other.
+A deterministic engine handles all matching and arithmetic first — exact UTR references, fuzzy recovery of truncated or transposed references, fee and tax decomposition, settlement age. Once that evidence is collected, an LLM reads it and writes a two-sentence explanation a finance team can act on. The model never touches the classification or the arithmetic — those are always done by code. It only explains what the code already found. That division is the whole design: correctness from determinism, communication from the model.
 
 ---
 
