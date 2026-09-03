@@ -44,28 +44,67 @@ The synthetic data mimics the structure of real Razorpay settlement exports and 
 
 **A note on the accuracy numbers:** The 100% figures are measured against synthetic data I generated myself, with the answer labels held out from the engine during evaluation. The honest next step is scoring against an independently built holdout set, or real anonymised data — that hasn't happened yet.
 
-![Dual ledger view showing merchant and settlement panels side by side](docs/screenshot-ledger.png)
+---
 
-> *Drop a screenshot of the dual-ledger or chat view here — one image does more work than a paragraph.*
+## The interface
+
+**Reconciliation stream** — shows the five pipeline steps running in sequence (load, exact match, fuzzy match, arithmetic split, classify), then surfaces key findings as chat messages with links to the evidence for each flagged record.
+
+![Reconciliation stream showing pipeline steps and findings](docs/screenshot-stream.png)
 
 ---
 
-## How this works in production (where there's no synthetic data)
+**Dual ledger** — merchant orders on the left, Razorpay settlements on the right. Hover either row to highlight its pair. Unmatched rows have a red marker. Click any row to open the engine's full explanation, breakdown, and reasoning trace in the right panel.
 
-In a real deployment, Residual sits between two live data sources:
+![Dual ledger view with side-by-side reconciliation and detail panel open](docs/screenshot-ledger.png)
+
+---
+
+**Ask the agent (Reya)** — type a question in plain English and get a specific answer backed by the actual batch numbers. Reya knows every record, every gap, and every cause. She'll tell you exactly which ones need your attention and why.
+
+![Chat interface showing Reya answering a question about flagged records](docs/screenshot-chat.png)
+
+---
+
+## How this works in production
+
+In the MVP, the two data sources are JSON files. In a real deployment they become live feeds — two new ingest endpoints replace the files, and the rest of the system stays identical.
 
 ```mermaid
 flowchart LR
-    A[Merchant order system\nwebhook / API pull] -->|POST /ingest/expected| B[Residual backend]
-    C[Razorpay settlement API\n/v1/settlements + /recon] -->|POST /ingest/settlements| B
-    B --> D[Dashboard / CSV / Chat]
+    subgraph Sources["Live data sources"]
+        OE[Merchant ERP\norder created webhook]
+        RZ[Razorpay\n/v1/settlements + /recon\nor settlement webhook]
+    end
+
+    subgraph Ingest["New ingest endpoints"]
+        IE[POST /ingest/expected]
+        IS[POST /ingest/settlements]
+    end
+
+    subgraph Core["Unchanged core"]
+        DB[(Database\nexpected · settlements\nreconciled results)]
+        EN[Reconciliation engine\nsame code]
+        AG[Agent + Chat\nsame code]
+    end
+
+    subgraph Out["Output"]
+        DA[Dashboard]
+        AL[Alerts / review queue]
+        CS[CSV export]
+        CH[Chat]
+    end
+
+    OE --> IE --> DB
+    RZ --> IS --> DB
+    DB --> EN --> DB
+    DB --> AG
+    EN --> DA & AL & CS
+    AG --> CH
 ```
 
-The merchant's order system pushes expected records via webhook on order creation or a periodic pull. Razorpay's settlement webhooks (or `/v1/settlements` + `/v1/settlements/{id}/recon`) feed the actual settlement side.
-
-In the MVP, since we don't have live access to either, those two endpoints are replaced by two JSON files: `data/synthetic_batch.json` holds both sides of the ledger in the exact same schema the real endpoints would produce. The reconciliation engine, the agent, and the entire API are production-ready — the only thing that changes between the MVP and a real deployment is where the data comes from.
-
-In production, the engine runs on a schedule (every settlement cycle, typically T+2) or triggers on incoming webhooks. Results are stored in a database rather than recomputed from JSON on every request.
+What stays the same: the entire reconciliation engine, agent, API, and frontend.
+What changes: `load_batch()` reads from a database instead of JSON. The engine runs on a T+2 schedule or triggers on incoming webhooks. Results are persisted rather than recomputed on every request.
 
 ---
 
@@ -191,46 +230,6 @@ flowchart TB
     AG --> HF
     SV -->|/query| HF
 ```
-
----
-
-## Production architecture
-
-```mermaid
-flowchart LR
-    subgraph Sources["Live data sources"]
-        OE[Merchant ERP\norder created webhook]
-        RZ[Razorpay\n/v1/settlements + /recon\nor settlement webhook]
-    end
-
-    subgraph Ingest["New ingest endpoints"]
-        IE[POST /ingest/expected]
-        IS[POST /ingest/settlements]
-    end
-
-    subgraph Core["Unchanged core"]
-        DB[(Database\nexpected · settlements\nreconciled results)]
-        EN[Reconciliation engine\nsame code]
-        AG[Agent + Chat\nsame code]
-    end
-
-    subgraph Out["Output"]
-        DA[Dashboard]
-        AL[Alerts / review queue]
-        CS[CSV export]
-        CH[Chat]
-    end
-
-    OE --> IE --> DB
-    RZ --> IS --> DB
-    DB --> EN --> DB
-    DB --> AG
-    EN --> DA & AL & CS
-    AG --> CH
-```
-
-What stays the same: the entire reconciliation engine, agent, API, and frontend.
-What changes: `load_batch()` reads from a database instead of JSON. Two new ingest endpoints. A scheduler triggers reconciliation runs on a T+2 cycle.
 
 ---
 
